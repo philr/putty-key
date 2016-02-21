@@ -63,6 +63,13 @@ module TestHelper
       end
     end
   end
+
+  class ::OpenSSL::BN
+    # Override to_s so the represented value is visible.
+    def inspect
+      "#<OpenSSL::BN:#{to_s(16)}>"
+    end
+  end
 end
 
 class Minitest::Test
