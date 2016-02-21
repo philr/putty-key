@@ -8,6 +8,11 @@ module PuTTY
           raise ArgumentError, 'ppk must not be nil' unless ppk
 
           case ppk.algorithm
+          when 'ssh-dss'
+            ::OpenSSL::PKey::DSA.new.tap do |pkey|
+              _, pkey.p, pkey.q, pkey.g, pkey.pub_key = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint, :mpint, :mpint)
+              pkey.priv_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
+            end
           when 'ssh-rsa'
             ::OpenSSL::PKey::RSA.new.tap do |pkey|
               _, pkey.e, pkey.n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
@@ -17,6 +22,16 @@ module PuTTY
             end
           else
             raise ArgumentError, "Unsupported algorithm: #{ppk.algorithm}"
+          end
+        end
+      end
+
+      module DSA
+        def to_ppk
+          PPK.new.tap do |ppk|
+            ppk.algorithm = 'ssh-dss'
+            ppk.public_blob = Util.ssh_pack('ssh-dss', p, q, g, pub_key)
+            ppk.private_blob = Util.ssh_pack(priv_key)
           end
         end
       end
@@ -32,6 +47,10 @@ module PuTTY
       end
 
       def self.global_install
+        ::OpenSSL::PKey::DSA.class_eval do
+          include DSA
+        end
+
         ::OpenSSL::PKey::RSA.class_eval do
           include RSA
         end
@@ -40,6 +59,10 @@ module PuTTY
           extend ClassMethods
         end
       end
+    end
+
+    refine ::OpenSSL::PKey::DSA do
+      include OpenSSL::DSA
     end
 
     refine ::OpenSSL::PKey::RSA do
