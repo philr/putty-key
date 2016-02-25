@@ -8,5 +8,8 @@ module PuTTY
 
     class InvalidStateError < Error
     end
+
+    class UnsupportedCurveError < Error
+    end
   end
 end

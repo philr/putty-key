@@ -40,8 +40,56 @@ class OpenSSLTest < Minitest::Test
     assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
   end
 
-  def pem_to_ppk(fixture)
-    pkey = OpenSSL::PKey.read(load_fixture(fixture))
+  def test_from_ppk_ecdsa_sha2_nistp256
+    ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256.ppk'))
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::EC, pkey)
+    assert_equal(load_fixture('ecdsa-sha2-nistp256.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_ecdsa_sha2_nistp256_encrypted
+    ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted.ppk'), 'Test Passphrase')
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::EC, pkey)
+    assert_equal(load_fixture('ecdsa-sha2-nistp256.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_ecdsa_sha2_nistp384
+    ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384.ppk'))
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::EC, pkey)
+    assert_equal(load_fixture('ecdsa-sha2-nistp384.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_ecdsa_sha2_nistp384_encrypted
+    ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted.ppk'), 'Test Passphrase')
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::EC, pkey)
+    assert_equal(load_fixture('ecdsa-sha2-nistp384.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_ecdsa_sha2_nistp521
+    ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521.ppk'))
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::EC, pkey)
+    assert_equal(load_fixture('ecdsa-sha2-nistp521.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_ecdsa_sha2_nistp521_encrypted
+    ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted.ppk'), 'Test Passphrase')
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::EC, pkey)
+    assert_equal(load_fixture('ecdsa-sha2-nistp521.pem'), pkey.to_pem)
+  end
+
+  def pem_to_ppk(fixture, type = nil)
+    pem = load_fixture(fixture)
+
+    # Accessing OpenSSL::PKey::EC#public_key raises a warning when the key was
+    # loaded with OpenSSL::PKey.read(pem), but doesn't when instatiated with
+    # OpenSSL::PKey::EC.new(pem) (Ruby 2.3.0).
+    pkey = type ? type.new(pem) : OpenSSL::PKey.read(pem)
+
     pkey.to_ppk.tap do |ppk|
       assert_nil(ppk.comment)
     end
@@ -81,5 +129,69 @@ class OpenSSLTest < Minitest::Test
       ppk.save(file, 'Test Passphrase')
       assert_identical_to_fixture('dss-1024-encrypted.ppk', file)
     end
+  end
+
+  def test_to_ppk_ecdsa_sha2_nistp256
+    ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)
+    ppk.comment = 'ECDSA NIST P-256 Key'
+    temp_file_name do |file|
+      ppk.save(file)
+      assert_identical_to_fixture('ecdsa-sha2-nistp256.ppk', file)
+    end
+  end
+
+  def test_to_ppk_ecdsa_sha2_nistp256_encrypted
+    ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)
+    ppk.comment = 'ECDSA NIST P-256 Key'
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase')
+      assert_identical_to_fixture('ecdsa-sha2-nistp256-encrypted.ppk', file)
+    end
+  end
+
+  def test_to_ppk_ecdsa_sha2_nistp384
+    ppk = pem_to_ppk('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC)
+    ppk.comment = 'ECDSA NIST P-384 Key'
+    temp_file_name do |file|
+      ppk.save(file)
+      assert_identical_to_fixture('ecdsa-sha2-nistp384.ppk', file)
+    end
+  end
+
+  def test_to_ppk_ecdsa_sha2_nistp384_encrypted
+    ppk = pem_to_ppk('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC)
+    ppk.comment = 'ECDSA NIST P-384 Key'
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase')
+      assert_identical_to_fixture('ecdsa-sha2-nistp384-encrypted.ppk', file)
+    end
+  end
+
+  def test_to_ppk_ecdsa_sha2_nistp521
+    ppk = pem_to_ppk('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC)
+    ppk.comment = 'ECDSA NIST P-521 Key'
+    temp_file_name do |file|
+      ppk.save(file)
+      assert_identical_to_fixture('ecdsa-sha2-nistp521.ppk', file)
+    end
+  end
+
+  def test_to_ppk_ecdsa_sha2_nistp521_encrypted
+    ppk = pem_to_ppk('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC)
+    ppk.comment = 'ECDSA NIST P-521 Key'
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase')
+      assert_identical_to_fixture('ecdsa-sha2-nistp521-encrypted.ppk', file)
+    end
+  end
+
+  def test_to_ppk_unsupported_ec_curve
+    pkey = OpenSSL::PKey::EC.new(load_fixture('ecdsa-secp256k1.pem'))
+    assert_raises(PuTTY::Key::UnsupportedCurveError) { pkey.to_ppk }
+  end
+
+  def test_to_ppk_uninitialized_ec_key
+    pkey = OpenSSL::PKey::EC.new('prime256v1')
+    assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
   end
 end
