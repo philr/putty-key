@@ -24,5 +24,5 @@ for use with PuTTY and vice-versa.
                     '--main' << 'README.md' <<
                     '--markup' << 'markdown'
   s.extra_rdoc_files = ['CHANGES.md', 'LICENSE', 'README.md']
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 2.1.0'
 end
