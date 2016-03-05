@@ -103,11 +103,11 @@ module PuTTY
     OpenSSL::PKEY_CLASSES.each do |name, openssl_class|
       refine openssl_class do
         include OpenSSL.const_get(name)
-      end
+      end if respond_to?(:refine, true)
     end
 
     refine ::OpenSSL::PKey.singleton_class do
       include OpenSSL::ClassMethods
-    end
+    end if respond_to?(:refine, true)
   end
 end

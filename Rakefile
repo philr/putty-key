@@ -77,6 +77,10 @@ if RUBY_PLATFORM == 'java'
   task 'test:refinement' do
     puts 'Skipping refinement tests on JRuby'
   end
+elsif !respond_to?(:using, true)
+  task 'test:refinement' do
+    puts "Skipping refinement tests because #{RUBY_DESCRIPTION} lacks support for refinements"
+  end
 else
   define_test_task(:refinement)
 end
