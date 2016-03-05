@@ -22,7 +22,8 @@ To add PuTTY::Key as a Bundler dependency, add the following line to your
 
 ## Compatibility ##
 
-PuTTY::Key is compatible with Ruby MRI 2.1.0+, JRuby 9.0.0.0+ and Rubinius 2+.
+PuTTY::Key is compatible with Ruby MRI 2.1.0+, JRuby 9.0.0.0+ and
+Rubinius 2.5.4+.
 
 
 ## Usage ##
