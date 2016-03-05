@@ -72,7 +72,15 @@ def define_test_task(type)
   Rake::Task[test_task].enhance([env_task])
 end
 
-define_test_task(:refinement)
+# JRuby 9.0.5.0 doesn't handle refinements correctly.
+if RUBY_PLATFORM == 'java'
+  task 'test:refinement' do
+    puts 'Skipping refinement tests on JRuby'
+  end
+else
+  define_test_task(:refinement)
+end
+
 define_test_task(:global)
 
 require 'coveralls/rake/task'

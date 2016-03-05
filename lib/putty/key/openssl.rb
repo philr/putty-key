@@ -3,6 +3,8 @@ require 'openssl'
 module PuTTY
   module Key
     module OpenSSL
+      PKEY_CLASSES = Hash[%i(DSA EC RSA).map {|c| [c, ::OpenSSL::PKey.const_get(c)] rescue nil }.compact]
+
       OPENSSL_CURVES = {
         'nistp256' => 'prime256v1',
         'nistp384' => 'secp384r1',
@@ -19,17 +21,27 @@ module PuTTY
           when 'ssh-dss'
             ::OpenSSL::PKey::DSA.new.tap do |pkey|
               _, pkey.p, pkey.q, pkey.g, pkey.pub_key = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint, :mpint, :mpint)
-              pkey.priv_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
+              private_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
+
+              # jruby-openssl doesn't have an OpenSSL::PKey::DSA#priv_key= method (version 0.9.16)
+              (pkey.priv_key = private_key) rescue raise ArgumentError, "Unsupported algorithm: #{ppk.algorithm}"
             end
           when 'ssh-rsa'
             ::OpenSSL::PKey::RSA.new.tap do |pkey|
-              _, pkey.e, pkey.n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
               pkey.d, pkey.p, pkey.q, pkey.iqmp = Util.ssh_unpack(ppk.private_blob, :mpint, :mpint, :mpint, :mpint)
               pkey.dmp1 = pkey.d % (pkey.p - 1)
               pkey.dmq1 = pkey.d % (pkey.q - 1)
+
+              # jruby-openssl requires e and n to be set last to obtain a valid private key (version 0.9.16)
+              _, pkey.e, pkey.n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
             end
           when /\Aecdsa-sha2-(nistp(?:256|384|521))\z/
-            ::OpenSSL::PKey::EC.new(OPENSSL_CURVES[$1]).tap do |pkey|
+            curve = OPENSSL_CURVES[$1]
+
+            # jruby-openssl doesn't include an EC class (version 0.9.16)
+            ec_class = (::OpenSSL::PKey::EC rescue raise ArgumentError, "Unsupported algorithm: #{ppk.algorithm}")
+
+            ec_class.new(curve).tap do |pkey|
               _, _, point = Util.ssh_unpack(ppk.public_blob, :string, :string, :mpint)
               pkey.public_key = ::OpenSSL::PKey::EC::Point.new(pkey.group, point)
               pkey.private_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
@@ -75,16 +87,11 @@ module PuTTY
       end
 
       def self.global_install
-        ::OpenSSL::PKey::DSA.class_eval do
-          include DSA
-        end
-
-        ::OpenSSL::PKey::EC.class_eval do
-          include EC
-        end
-
-        ::OpenSSL::PKey::RSA.class_eval do
-          include RSA
+        PKEY_CLASSES.each do |name, openssl_class|
+          mod = const_get(name)
+          openssl_class.class_eval do
+            include mod
+          end
         end
 
         ::OpenSSL::PKey.module_eval do
@@ -93,16 +100,10 @@ module PuTTY
       end
     end
 
-    refine ::OpenSSL::PKey::DSA do
-      include OpenSSL::DSA
-    end
-
-    refine ::OpenSSL::PKey::EC do
-      include OpenSSL::EC
-    end
-
-    refine ::OpenSSL::PKey::RSA do
-      include OpenSSL::RSA
+    OpenSSL::PKEY_CLASSES.each do |name, openssl_class|
+      refine openssl_class do
+        include OpenSSL.const_get(name)
+      end
     end
 
     refine ::OpenSSL::PKey.singleton_class do
