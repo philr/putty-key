@@ -21,19 +21,14 @@ module PuTTY
           when 'ssh-dss'
             ::OpenSSL::PKey::DSA.new.tap do |pkey|
               _, pkey.p, pkey.q, pkey.g, pkey.pub_key = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint, :mpint, :mpint)
-              private_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
-
-              # jruby-openssl doesn't have an OpenSSL::PKey::DSA#priv_key= method (version 0.9.16)
-              (pkey.priv_key = private_key) rescue raise ArgumentError, "Unsupported algorithm: #{ppk.algorithm}"
+              pkey.priv_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
             end
           when 'ssh-rsa'
             ::OpenSSL::PKey::RSA.new.tap do |pkey|
+              _, pkey.e, pkey.n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
               pkey.d, pkey.p, pkey.q, pkey.iqmp = Util.ssh_unpack(ppk.private_blob, :mpint, :mpint, :mpint, :mpint)
               pkey.dmp1 = pkey.d % (pkey.p - 1)
               pkey.dmq1 = pkey.d % (pkey.q - 1)
-
-              # jruby-openssl requires e and n to be set last to obtain a valid private key (version 0.9.16)
-              _, pkey.e, pkey.n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
             end
           when /\Aecdsa-sha2-(nistp(?:256|384|521))\z/
             curve = OPENSSL_CURVES[$1]

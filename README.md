@@ -22,8 +22,11 @@ To add PuTTY::Key as a Bundler dependency, add the following line to your
 
 ## Compatibility ##
 
-PuTTY::Key is compatible with Ruby MRI 2.1.0+, JRuby 9.0.0.0+ and
-Rubinius 2.5.4+.
+PuTTY::Key is compatible with Ruby MRI 2.1.0+ and Rubinius 2.5.4+.
+
+JRuby will be supported (DSA/DSS and RSA keys only) once jruby-openssl pull
+requests [#82](https://github.com/jruby/jruby-openssl/pull/82) and
+[#83](https://github.com/jruby/jruby-openssl/pull/83) have been released.
 
 
 ## Usage ##

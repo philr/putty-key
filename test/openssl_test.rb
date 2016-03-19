@@ -30,31 +30,18 @@ class OpenSSLTest < Minitest::Test
     assert_equal(load_fixture('rsa-2048.pem'), pkey.to_pem)
   end
 
-  # jruby-openssl doesn't have an OpenSSL::PKey::DSA#priv_key= method (version 0.9.16)
-  if OpenSSL::PKey::DSA.new.respond_to?(:priv_key=)
-    def test_from_ppk_dss
-      ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024.ppk'))
-      pkey = OpenSSL::PKey.from_ppk(ppk)
-      assert_kind_of(OpenSSL::PKey::DSA, pkey)
-      assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
-    end
+  def test_from_ppk_dss
+    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024.ppk'))
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::DSA, pkey)
+    assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
+  end
 
-    def test_from_ppk_dss_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted.ppk'), 'Test Passphrase')
-      pkey = OpenSSL::PKey.from_ppk(ppk)
-      assert_kind_of(OpenSSL::PKey::DSA, pkey)
-      assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
-    end
-  else
-    def test_from_ppk_dss
-      ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024.ppk'))
-      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
-    end
-
-    def test_from_ppk_dss_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted.ppk'), 'Test Passphrase')
-      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
-    end
+  def test_from_ppk_dss_encrypted
+    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted.ppk'), 'Test Passphrase')
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::DSA, pkey)
+    assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
   end
 
   # jruby-openssl doesn't include an EC class (version 0.9.16)
