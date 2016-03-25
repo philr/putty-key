@@ -228,6 +228,15 @@ class PPKTest < Minitest::Test
     end
   end
 
+  def test_save_overwrite
+    ppk = create_test_ppk
+    temp_file_name do |file|
+      File.open(file, 'w') { |f| f.write('not test.ppk') }
+      ppk.save(file)
+      assert_identical_to_fixture('test.ppk', file)
+    end
+  end
+
   def test_save_result
     ppk = create_test_ppk
     temp_file_name do |file|
