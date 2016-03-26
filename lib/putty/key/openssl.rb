@@ -3,17 +3,45 @@ require 'openssl'
 module PuTTY
   module Key
     module OpenSSL
+      # {OpenSSL::PKey} classes to be refined.
+      #
+      # @private
       PKEY_CLASSES = Hash[%i(DSA EC RSA).map {|c| [c, ::OpenSSL::PKey.const_get(c)] rescue nil }.compact]
 
+      # Mapping from SSH curve names to their equivalent OpenSSL names.
+      #
+      # @private
       OPENSSL_CURVES = {
         'nistp256' => 'prime256v1',
         'nistp384' => 'secp384r1',
         'nistp521' => 'secp521r1'
       }
 
+      # Mapping from OpenSSL curve names to their equivalent SSH names.
+      #
+      # @private
       SSH_CURVES = OPENSSL_CURVES.invert
 
+      # The {ClassMethods} module is used to extend `OpenSSL::PKey` when
+      # using the PuTTY::Key refinement or calling {PuTTY::Key.global_install}.
+      # This adds a `from_ppk` class method to `OpenSSL::PKey`.
+      #
       module ClassMethods
+        # Creates a new `OpenSSL::PKey` from a PuTTY private key (instance of
+        # {PPK}).
+        #
+        # This method is called using `OpenSSL::PKey.from_ppk(ppk)`.
+        #
+        # PuTTY keys using the algorithms `ssh-dss`, `ssh-rsa`,
+        # `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384` and `ecdsa-sha2-nistp521`
+        # are supported.
+        #
+        # @return [Object] An instance of either `OpenSSL::PKey::DSA`,
+        #   `OpenSSL::PKey::RSA` or `OpenSSL::PKey::EC` depending on the
+        #   algorithm of `ppk`.
+        #
+        # @raise [ArgumentError] If `ppk` is `nil`.
+        # @raise [ArgumentError] If the algorithm of `ppk` is not supported.
         def from_ppk(ppk)
           raise ArgumentError, 'ppk must not be nil' unless ppk
 
@@ -47,7 +75,15 @@ module PuTTY
         end
       end
 
+      # The {DSA} module is included into `OpenSSL::PKey::DSA` when using the
+      # PuTTY::Key refinement or calling {PuTTY::Key.global_install}. This adds
+      # a `to_ppk` instance method to `OpenSSL::PKey::DSA`.
       module DSA
+        # Returns a new {PPK} instance that is equivalent to this key.
+        #
+        # `to_ppk` can be called on instances of `OpenSSL::PKey::DSA`.
+        #
+        # @return [PPK] A new instance of {PPK} that is equivalent to this key.
         def to_ppk
           PPK.new.tap do |ppk|
             ppk.algorithm = 'ssh-dss'
@@ -57,7 +93,19 @@ module PuTTY
         end
       end
 
+      # The {EC} module is included into `OpenSSL::PKey::EC` when using the
+      # PuTTY::Key refinement or calling {PuTTY::Key.global_install}. This adds
+      # a `to_ppk` instance method to `OpenSSL::PKey::EC`.
       module EC
+        # Returns a new {PPK} instance that is equivalent to this key.
+        #
+        # `to_ppk` can be called on instances of `OpenSSL::PKey::EC`.
+        #
+        # @return [PPK] A new instance of {PPK} that is equivalent to this key.
+        #
+        # @raise [InvalidStateError] If the key has not been initialized.
+        # @raise [UnsupportedCurveError] If the key uses a curve that is not
+        #   supported by PuTTY.
         def to_ppk
           raise InvalidStateError, 'The key has not been initialized (group is nil)' unless public_key
           ssh_curve = SSH_CURVES[group.curve_name]
@@ -71,7 +119,15 @@ module PuTTY
         end
       end
 
+      # The {RSA} module is included into `OpenSSL::PKey::RSA` when using the
+      # PuTTY::Key refinement or calling {PuTTY::Key.global_install}. This adds
+      # a `to_ppk` instance method to `OpenSSL::PKey::RSA`.
       module RSA
+        # Returns a new {PPK} instance that is equivalent to this key.
+        #
+        # `to_ppk` can be called on instances of `OpenSSL::PKey::DSA`.
+        #
+        # @return [PPK] A new instance of {PPK} that is equivalent to this key.
         def to_ppk
           PPK.new.tap do |ppk|
             ppk.algorithm = 'ssh-rsa'
@@ -81,6 +137,10 @@ module PuTTY
         end
       end
 
+      # Makes the refinements to `OpenSSL` available in PuTTY::Key available
+      # globally. After calling {global_install}, it is no longer necessary to
+      # include `using PuTTY::Key` when using the `to_ppk` and `from_ppk`
+      # methods added to `OpenSSL::PKey`.
       def self.global_install
         PKEY_CLASSES.each do |name, openssl_class|
           mod = const_get(name)

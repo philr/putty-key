@@ -2,23 +2,27 @@
 
 [![Gem Version](https://badge.fury.io/rb/putty-key.svg)](http://badge.fury.io/rb/putty-key) [![Build Status](https://travis-ci.org/philr/putty-key.svg?branch=master)](https://travis-ci.org/philr/putty-key) [![Coverage Status](https://coveralls.io/repos/philr/putty-key/badge.svg?branch=master)](https://coveralls.io/r/philr/putty-key?branch=master)
 
-PuTTY::Key contains a refinement to OpenSSL::PKey to add support for converting
-OpenSSL::PKey::DSA and OpenSSL::PKey::RSA private keys to and from the PuTTY
-private key (PPK) format. This allows DSA and RSA OpenSSH keys to be converted
-for use with PuTTY and vice-versa.
+PuTTY::Key handles reading and writing PuTTY private key (.ppk) files. It
+includes a refinement to Ruby's OpenSSL library to add support for converting
+DSA, EC and RSA private keys to and from PuTTY private key files. This allows
+OpenSSH ecdsa, ssh-dss and ssh-rsa private keys to be converted to and from
+PuTTY's private key format.
 
 
 ## Installation ##
 
 To install the PuTTY::Key gem, run the following command:
 
-    gem install putty-key
+```bash
+gem install putty-key
+```
 
 To add PuTTY::Key as a Bundler dependency, add the following line to your
 `Gemfile`:
 
-    gem 'putty-key'
-
+```ruby
+gem 'putty-key'
+```
 
 ## Compatibility ##
 
@@ -33,23 +37,90 @@ requests [#82](https://github.com/jruby/jruby-openssl/pull/82) and
 
 To use PuTTY::Key, it must first be loaded with:
 
-    require 'putty/key'
+```ruby
+require 'putty/key'
+```
 
-The included refinement must can then either be activated in the lexical scope
-(file, class or module) where it will be used with:
+The included [refinement](http://ruby-doc.org/core-2.3.0/doc/syntax/refinements_rdoc.html)
+can then either be activated in the lexical scope (file, class or module) where
+it will be used with:
 
-    using PuTTY::Key
+```ruby
+using PuTTY::Key
+```
 
-or installed globally with:
+or installed globally by calling:
 
-    PuTTY::Key.global_install
+```ruby
+PuTTY::Key.global_install
+```
 
-** todo: usage guide here **
+Note that Rubinius (as of version 3.19) does not support refinements, so the
+global installation approach is required.
+
+JRuby (as of version 9.0.5.0) includes support for refinements, but there are
+still outstanding issues. The global installation approach is preferable on
+JRuby.
+
+The following sections give examples of how PuTTY::Key can be used.
 
 
-## Documentation ##
+### Converting a .pem formatted key file to an unencrypted .ppk file ###
 
-Documentation for PuTTY::Key is available on
+```ruby
+require 'openssl'
+require 'putty/key'
+using PuTTY::Key    # or PuTTY::Key.global_install
+
+pem = File.read('key.pem', mode: 'rb')
+pkey = OpenSSL::PKey.read(pem)
+ppk = pkey.to_ppk
+ppk.comment = 'Optional comment'
+ppk.save('key.ppk')
+```
+
+
+### Generating a new RSA key and saving it as an encrypted .ppk file ###
+
+```ruby
+require 'openssl'
+require 'putty/key'
+using PuTTY::Key    # or PuTTY::Key.global_install
+
+rsa = OpenSSL::PKey::RSA.generate(2048)
+ppk = rsa.to_ppk
+ppk.comment = 'RSA 2048'
+ppk.save('rsa.ppk', 'Passphrase for encryption')
+```
+
+
+### Converting an unencrypted .ppk file to .pem format ###
+
+```ruby
+require 'openssl'
+require 'putty/key'
+using PuTTY::Key    # or PuTTY::Key.global_install
+
+ppk = PuTTY::Key::PPK.new('key.ppk')
+pkey = OpenSSL::PKey.from_ppk(ppk)
+pem = pkey.to_pem
+File.write('key.pem', pem, mode: 'wb')
+```
+
+
+### Decrypting a .ppk file and re-saving it without encryption ###
+
+```ruby
+require 'putty/key'
+
+ppk = PuTTY::Key::PPK.new('rsa.ppk', 'Passphrase for encryption')
+ppk.save('rsa-plain.ppk')
+```
+
+
+## API Documentation ##
+
+API documentation for PuTTY::Key is available on
 [RubyDoc.info](http://www.rubydoc.info/gems/putty-key).
 
 

@@ -1,9 +1,15 @@
 module PuTTY
-  # PuTTY::Key contains a refinement to OpenSSL::PKey to add support for
-  # converting OpenSSL::PKey::DSA and OpenSSL::PKey::RSA private keys to and
-  # from the PuTTY private key (PPK) format.
+  # PuTTY::Key handles reading and writing PuTTY private key (.ppk) files. It
+  # includes a refinement to Ruby's OpenSSL library to add support for
+  # converting DSA, EC and RSA private keys to and from PuTTY private key files.
+  # This allows OpenSSH ecdsa, ssh-dss and ssh-rsa private keys to be converted
+  # to and from PuTTY format.
   module Key
 
+    # Makes the refinements available in PuTTY::Key available globally. After
+    # calling {global_install}, it is no longer necessary to include
+    # `using PuTTY::Key` when using the `to_ppk` and `from_ppk` methods added to
+    # `OpenSSL::PKey`.
     def self.global_install
       ::PuTTY::Key::OpenSSL.global_install
     end

@@ -3,12 +3,13 @@ require File.expand_path(File.join('..', 'lib', 'putty', 'key', 'version'), __FI
 Gem::Specification.new do |s|
   s.name = 'putty-key'
   s.version = PuTTY::Key::VERSION
-  s.summary = 'Refines OpenSSL::PKey to support converting to and from PuTTY private key (PPK) format.'
+  s.summary = 'Reads and writes PuTTY private key (.ppk) files. Refines OpenSSL::PKey to allow key conversion.'
   s.description = <<-EOF
-PuTTY::Key contains a refinement to OpenSSL::PKey to add support for converting
-OpenSSL::PKey::DSA and OpenSSL::PKey::RSA private keys to and from the PuTTY
-private key (PPK) format. This allows DSA and RSA OpenSSH keys to be converted
-for use with PuTTY and vice-versa.
+PuTTY::Key handles reading and writing PuTTY private key (.ppk) files. It
+includes a refinement to Ruby's OpenSSL library to add support for converting
+DSA, EC and RSA private keys to and from PuTTY private key files. This allows
+OpenSSH ecdsa, ssh-dss and ssh-rsa private keys to be converted to and from
+PuTTY private key format.
   EOF
   s.author = 'Philip Ross'
   s.email = 'phil.ross@gmail.com'
