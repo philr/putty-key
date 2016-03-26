@@ -23,8 +23,8 @@ module PuTTY
     # was only used briefly early on in the development of the .ppk format.
     class PPK
       # String used in the computation of the private MAC.
-      # @private
-      PRIVATE_MAC_KEY = 'putty-private-key-file-mac-key'.b.freeze
+      MAC_KEY = 'putty-private-key-file-mac-key'#.b#.freeze
+      private_constant :MAC_KEY
 
       # The default (and only supported) encryption algorithm.
       DEFAULT_ENCRYPTION_TYPE = 'aes256-cbc'.freeze
@@ -219,15 +219,13 @@ module PuTTY
       # @return [String] The computed private MAC.
       def compute_private_mac(passphrase, encryption_type, padded_private_blob)
         key = ::OpenSSL::Digest::SHA1.new
-        key.update(PRIVATE_MAC_KEY)
+        key.update(MAC_KEY)
         key.update(passphrase) if passphrase
         data = Util.ssh_pack(@algorithm, encryption_type, @comment || '', @public_blob, padded_private_blob)
         ::OpenSSL::HMAC.hexdigest(::OpenSSL::Digest::SHA1.new, key.digest, data)
       end
 
       # Handles reading .ppk files.
-      #
-      # @private
       class Reader
         # Opens a .ppk file for reading, creates a new instance of `Reader` and
         # yields it to the caller.
@@ -294,10 +292,9 @@ module PuTTY
           raise FormatError, 'Truncated ppk file detected'
         end
       end
+      private_constant :Reader
 
       # Handles writing .ppk files.
-      #
-      # @private
       class Writer
         # The number of bytes that have been written.
         #
@@ -367,6 +364,7 @@ module PuTTY
           @bytes_written += @file.write(string)
         end
       end
+      private_constant :Writer
     end
   end
 end

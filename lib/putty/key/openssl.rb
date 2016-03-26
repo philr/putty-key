@@ -4,23 +4,20 @@ module PuTTY
   module Key
     module OpenSSL
       # {OpenSSL::PKey} classes to be refined.
-      #
-      # @private
       PKEY_CLASSES = Hash[%i(DSA EC RSA).map {|c| [c, ::OpenSSL::PKey.const_get(c)] rescue nil }.compact]
+      private_constant :PKEY_CLASSES
 
       # Mapping from SSH curve names to their equivalent OpenSSL names.
-      #
-      # @private
       OPENSSL_CURVES = {
         'nistp256' => 'prime256v1',
         'nistp384' => 'secp384r1',
         'nistp521' => 'secp521r1'
       }
+      private_constant :OPENSSL_CURVES
 
       # Mapping from OpenSSL curve names to their equivalent SSH names.
-      #
-      # @private
       SSH_CURVES = OPENSSL_CURVES.invert
+      private_constant :SSH_CURVES
 
       # The {ClassMethods} module is used to extend `OpenSSL::PKey` when
       # using the PuTTY::Key refinement or calling {PuTTY::Key.global_install}.
@@ -155,7 +152,7 @@ module PuTTY
       end
     end
 
-    OpenSSL::PKEY_CLASSES.each do |name, openssl_class|
+    OpenSSL.const_get(:PKEY_CLASSES).each do |name, openssl_class|
       refine openssl_class do
         include OpenSSL.const_get(name)
       end if respond_to?(:refine, true)
