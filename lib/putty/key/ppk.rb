@@ -189,7 +189,7 @@ module PuTTY
       #
       # @return [String] The generated key.
       def generate_encryption_key(passphrase, key_length)
-        key = String.new.encode!(Encoding::ASCII_8BIT)
+        key = String.new
         key_digest = ::OpenSSL::Digest::SHA1.new
         iteration = 0
 
