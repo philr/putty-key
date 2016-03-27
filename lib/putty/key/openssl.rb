@@ -81,11 +81,17 @@ module PuTTY
         # `to_ppk` can be called on instances of `OpenSSL::PKey::DSA`.
         #
         # @return [PPK] A new instance of {PPK} that is equivalent to this key.
+        #
+        # @raise [InvalidStateError] If the key has not been initialized.
         def to_ppk
           PPK.new.tap do |ppk|
             ppk.algorithm = 'ssh-dss'
-            ppk.public_blob = Util.ssh_pack('ssh-dss', p, q, g, pub_key)
-            ppk.private_blob = Util.ssh_pack(priv_key)
+            begin
+              ppk.public_blob = Util.ssh_pack('ssh-dss', p, q, g, pub_key)
+              ppk.private_blob = Util.ssh_pack(priv_key)
+            rescue NilValueError
+              raise InvalidStateError, 'The key has not been fully initialized (the p, q, g, pub_key and priv_key parameters must all be assigned)'
+            end
           end
         end
       end
@@ -104,14 +110,19 @@ module PuTTY
         # @raise [UnsupportedCurveError] If the key uses a curve that is not
         #   supported by PuTTY.
         def to_ppk
-          raise InvalidStateError, 'The key has not been initialized (group is nil)' unless public_key
-          ssh_curve = SSH_CURVES[group.curve_name]
-          raise UnsupportedCurveError, "The curve '#{group.curve_name}' is not supported" unless ssh_curve
+          curve = group && group.curve_name
+          raise InvalidStateError, 'The key has not been fully initialized (a curve name must be assigned)' unless curve
+          ssh_curve = SSH_CURVES[curve]
+          raise UnsupportedCurveError, "The curve '#{curve}' is not supported" unless ssh_curve
 
           PPK.new.tap do |ppk|
             ppk.algorithm = "ecdsa-sha2-#{ssh_curve}"
-            ppk.public_blob = Util.ssh_pack(ppk.algorithm, ssh_curve, public_key.to_bn)
-            ppk.private_blob = Util.ssh_pack(private_key)
+            begin
+              ppk.public_blob = Util.ssh_pack(ppk.algorithm, ssh_curve, public_key && public_key.to_bn)
+              ppk.private_blob = Util.ssh_pack(private_key)
+            rescue NilValueError
+              raise InvalidStateError, 'The key has not been fully initialized (public_key and private_key must both be assigned)'
+            end
           end
         end
       end
@@ -125,11 +136,17 @@ module PuTTY
         # `to_ppk` can be called on instances of `OpenSSL::PKey::DSA`.
         #
         # @return [PPK] A new instance of {PPK} that is equivalent to this key.
+        #
+        # @raise [InvalidStateError] If the key has not been initialized.
         def to_ppk
           PPK.new.tap do |ppk|
             ppk.algorithm = 'ssh-rsa'
-            ppk.public_blob = Util.ssh_pack('ssh-rsa', e, n)
-            ppk.private_blob = Util.ssh_pack(d, p, q, iqmp)
+            begin
+              ppk.public_blob = Util.ssh_pack('ssh-rsa', e, n)
+              ppk.private_blob = Util.ssh_pack(d, p, q, iqmp)
+            rescue NilValueError
+              raise InvalidStateError, 'The key has not been fully initialized (the e, n, d, p, q and iqmp parameters must all be assigned)'
+            end
           end
         end
       end

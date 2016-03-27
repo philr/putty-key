@@ -3,7 +3,8 @@
 require 'test_helper'
 require 'openssl'
 
-# PuTTY::Key::Util is a private constant
+# PuTTY::Key::NilValueError and PuTTY::Key::Util are private constants.
+NilValueError = PuTTY::Key.const_get(:NilValueError)
 Util = PuTTY::Key.const_get(:Util)
 
 class PPKTest < Minitest::Test
@@ -14,7 +15,7 @@ class PPKTest < Minitest::Test
   end
 
   def test_ssh_pack_nil_element
-    assert_raises(ArgumentError) { Util.ssh_pack('test', nil, 'test2') }
+    assert_raises(NilValueError) { Util.ssh_pack('test', nil, 'test2') }
   end
 
   def ssh_pack_string_empty

@@ -17,5 +17,10 @@ module PuTTY
     # Indicates that the specified elliptic curve is not supported.
     class UnsupportedCurveError < Error
     end
+
+    # Indicates that a nil value has been encountered.
+    class NilValueError < Error
+    end
+    private_constant :NilValueError
   end
 end

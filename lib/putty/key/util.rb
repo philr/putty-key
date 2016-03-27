@@ -15,12 +15,12 @@ module PuTTY
       #
       # @return [String] A binary String containing the encoded values.
       #
-      # @raise ArgumentError If a value is `nil`.
+      # @raise NilValueError If a value is `nil`.
       def self.ssh_pack(*values)
         return ''.b if values.empty?
 
         values.map do |value|
-          raise ArgumentError, 'values elements must not be nil' unless value
+          raise NilValueError, 'values must not contain nil elements' unless value
 
           if value.kind_of?(::OpenSSL::BN)
             value = value.to_i

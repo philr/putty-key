@@ -150,6 +150,11 @@ class OpenSSLTest < Minitest::Test
     end
   end
 
+  def test_to_ppk_rsa_uninitialized
+    pkey = OpenSSL::PKey::RSA.new
+    assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
+  end
+
   def test_to_ppk_dss
     ppk = pem_to_ppk('dss-1024.pem')
     ppk.comment = '1024 bit DSS key'
@@ -166,6 +171,11 @@ class OpenSSLTest < Minitest::Test
       ppk.save(file, 'Test Passphrase')
       assert_identical_to_fixture('dss-1024-encrypted.ppk', file)
     end
+  end
+
+  def test_to_ppk_dss_uninitialized
+    pkey = OpenSSL::PKey::DSA.new
+    assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
   end
 
   # jruby-openssl doesn't include an EC class (version 0.9.15)
@@ -231,6 +241,11 @@ class OpenSSLTest < Minitest::Test
 
     def test_to_ppk_uninitialized_ec_key
       pkey = OpenSSL::PKey::EC.new('prime256v1')
+      assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
+    end
+
+    def test_to_ppk_uninitialized_ec_key_no_curve
+      pkey = OpenSSL::PKey::EC.new
       assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
     end
   end
