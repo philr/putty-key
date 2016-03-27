@@ -123,7 +123,7 @@ class OpenSSLTest < Minitest::Test
     pem = load_fixture(fixture)
 
     # Accessing OpenSSL::PKey::EC#public_key raises a warning when the key was
-    # loaded with OpenSSL::PKey.read(pem), but doesn't when instatiated with
+    # loaded with OpenSSL::PKey.read(pem), but doesn't when instantiated with
     # OpenSSL::PKey::EC.new(pem) (Ruby 2.3.0).
     pkey = type ? type.new(pem) : OpenSSL::PKey.read(pem)
 
