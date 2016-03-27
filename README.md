@@ -42,8 +42,8 @@ require 'putty/key'
 ```
 
 The included [refinement](http://ruby-doc.org/core-2.3.0/doc/syntax/refinements_rdoc.html)
-can then either be activated in the lexical scope (file, class or module) where
-it will be used with:
+to Ruby's OpenSSL library can then either be activated in the lexical scope
+(file, class or module) where it will be used with:
 
 ```ruby
 using PuTTY::Key
