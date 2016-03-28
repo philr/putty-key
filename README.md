@@ -2,11 +2,11 @@
 
 [![Gem Version](https://badge.fury.io/rb/putty-key.svg)](http://badge.fury.io/rb/putty-key) [![Build Status](https://travis-ci.org/philr/putty-key.svg?branch=master)](https://travis-ci.org/philr/putty-key) [![Coverage Status](https://coveralls.io/repos/philr/putty-key/badge.svg?branch=master)](https://coveralls.io/r/philr/putty-key?branch=master)
 
-PuTTY::Key handles reading and writing PuTTY private key (.ppk) files. It
-includes a refinement to Ruby's OpenSSL library to add support for converting
-DSA, EC and RSA private keys to and from PuTTY private key files. This allows
-OpenSSH ecdsa, ssh-dss and ssh-rsa private keys to be converted to and from
-PuTTY's private key format.
+PuTTY::Key is a pure-Ruby implementation of the PuTTY private key (ppk) format,
+handling reading and writing .ppk files. It includes a refinement to Ruby's
+OpenSSL library to add support for converting DSA, EC and RSA private keys to
+and from PuTTY private key files. This allows OpenSSH ecdsa, ssh-dss and ssh-rsa
+private keys to be converted to and from PuTTY's private key format.
 
 
 ## Installation ##
@@ -26,7 +26,8 @@ gem 'putty-key'
 
 ## Compatibility ##
 
-PuTTY::Key is compatible with Ruby MRI 2.1.0+ and Rubinius 2.5.4+.
+PuTTY::Key is compatible with Ruby MRI 2.1.0+ and Rubinius 2.5.4+ (provided the
+OpenSSL standard library is available).
 
 JRuby will be supported (DSA/DSS and RSA keys only) once jruby-openssl pull
 requests [#82](https://github.com/jruby/jruby-openssl/pull/82) and
