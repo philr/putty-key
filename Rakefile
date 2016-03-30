@@ -54,11 +54,12 @@ task :tag do
   g.add_tag("v#{spec.version}", annotate: true, message: "Tagging v#{spec.version}")
 end
 
-def define_test_task(type)
+def define_test_task(type, test_coverage)
   type = type.to_s
 
   env_task = "test:env:#{type}"
   Rake::Task::define_task(env_task) do
+    ENV['TEST_COVERAGE'] = test_coverage ? '1' : '0'
     ENV['TEST_TYPE'] = type
   end
 
@@ -74,18 +75,26 @@ end
 
 # JRuby 9.0.5.0 doesn't handle refinements correctly.
 if RUBY_ENGINE == 'jruby'
+  # Don't run coverage tests on JRuby due to inaccurate results.
+  TEST_COVERAGE = false
+
   task 'test:refinement' do
     puts 'Skipping refinement tests on JRuby'
   end
 elsif !respond_to?(:using, true)
+  # Don't run coverage tests on platforms that don't support refinements, since
+  # it won't be possible to get complete coverage.
+  TEST_COVERAGE = false
+
   task 'test:refinement' do
     puts "Skipping refinement tests because #{RUBY_DESCRIPTION} lacks support for refinements"
   end
 else
-  define_test_task(:refinement)
+  TEST_COVERAGE = true
+  define_test_task(:refinement, TEST_COVERAGE)
 end
 
-define_test_task(:global)
+define_test_task(:global, TEST_COVERAGE)
 
 require 'coveralls/rake/task'
 Coveralls::RakeTask.new
@@ -95,5 +104,5 @@ task :clean_coverage do
 end
 
 desc 'Run tests using the refinement, then with the global install'
-task :test => [:clean_coverage, 'test:refinement', 'test:global', 'coveralls:push'] do
+task :test => [:clean_coverage, 'test:refinement', 'test:global'] + (TEST_COVERAGE ? ['coveralls:push'] : []) do
 end

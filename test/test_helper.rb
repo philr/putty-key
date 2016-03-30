@@ -1,10 +1,9 @@
 TEST_TYPE = (ENV['TEST_TYPE'] || 'refinement').to_sym
 raise "Unrecognized TEST_TYPE: #{TEST_TYPE}" unless [:refinement, :global].include?(TEST_TYPE)
 
-# Don't run coverage tests on JRuby due to inaccurate results.
-# Don't run coverage tests on platforms that don't support refinements, since
-# it won't be possible to get complete coverage.
-if RUBY_ENGINE != 'jruby' && respond_to?(:using, true)
+TEST_COVERAGE = ENV['TEST_COVERAGE'] != '0'
+
+if TEST_COVERAGE
   require 'simplecov'
   require 'coveralls'
 
