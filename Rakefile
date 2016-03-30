@@ -73,7 +73,7 @@ def define_test_task(type)
 end
 
 # JRuby 9.0.5.0 doesn't handle refinements correctly.
-if RUBY_PLATFORM == 'java'
+if RUBY_ENGINE == 'jruby'
   task 'test:refinement' do
     puts 'Skipping refinement tests on JRuby'
   end
