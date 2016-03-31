@@ -12,7 +12,7 @@ module PuTTY
       #
       # No encoding conversion is performed on Strings.
       #
-      # @param [Array] *values An Array of String and OpenSSL::BN instances to
+      # @param [Array] values An Array of String and OpenSSL::BN instances to
       #   be encoded.
       #
       # @return [String] A binary String containing the encoded values.
@@ -61,7 +61,7 @@ module PuTTY
       # mpint values.
       #
       # @param [String] encoded A binary {String} containing the encoded values.
-      # @param [Array<Symbol>] *spec An array consisting of :string or :mpint
+      # @param [Array<Symbol>] spec An array consisting of :string or :mpint
       #   elements describing the contents of encoded.
       #
       # @return [Array] An array of decoded (binary) {String} and {OpenSSL::BN}
