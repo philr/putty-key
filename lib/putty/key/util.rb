@@ -4,6 +4,8 @@ require 'stringio'
 module PuTTY
   module Key
     # Utility methods used internally by PuTTY::Key.
+    #
+    # @private
     module Util
       # Encodes a list of values (String and OpenSSL::BN instances) according
       # to RFC 4251 section 5 (as strings and mpints).

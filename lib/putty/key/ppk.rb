@@ -226,6 +226,8 @@ module PuTTY
       end
 
       # Handles reading .ppk files.
+      #
+      # @private
       class Reader
         # Opens a .ppk file for reading, creates a new instance of `Reader` and
         # yields it to the caller.
@@ -295,6 +297,8 @@ module PuTTY
       private_constant :Reader
 
       # Handles writing .ppk files.
+      #
+      # @private
       class Writer
         # The number of bytes that have been written.
         #
