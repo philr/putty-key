@@ -7,7 +7,7 @@ BASE_DIR = File.expand_path(File.dirname(__FILE__))
 
 task :default => :test
 
-spec ||= eval(File.read('putty-key.gemspec'))
+spec = eval(File.read('putty-key.gemspec'))
 
 # Attempt to find the private key and return a spec with added options for
 # signing the gem if found.
