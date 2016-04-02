@@ -48,6 +48,7 @@ def recurse_chmod(dir)
   end
 end
 
+desc 'Create a tag for the current version'
 task :tag do
   require 'git'
   g = Git.init(BASE_DIR)
@@ -99,6 +100,7 @@ define_test_task(:global, TEST_COVERAGE)
 require 'coveralls/rake/task'
 Coveralls::RakeTask.new
 
+desc 'Remove coverage results'
 task :clean_coverage do
   FileUtils.rm_f(File.join(BASE_DIR, 'coverage', '.resultset.json'))
 end
