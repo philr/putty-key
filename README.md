@@ -56,7 +56,7 @@ or installed globally by calling:
 PuTTY::Key.global_install
 ```
 
-Note that Rubinius (as of version 3.19) does not support refinements, so the
+Note that Rubinius (as of version 3.22) does not support refinements, so the
 global installation approach is required.
 
 JRuby (as of version 9.0.5.0) includes support for refinements, but there are
