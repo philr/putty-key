@@ -26,8 +26,7 @@ gem 'putty-key'
 
 ## Compatibility ##
 
-PuTTY::Key is compatible with Ruby MRI 2.1.0+, JRuby 9.1.0.0+ and Rubinius
-2.5.4+ (provided the OpenSSL standard library is available).
+PuTTY::Key is compatible with Ruby MRI 2.1.0+ and JRuby 9.1.0.0+.
 
 
 ## Usage ##
@@ -51,9 +50,6 @@ or installed globally by calling:
 ```ruby
 PuTTY::Key.global_install
 ```
-
-Note that Rubinius (as of version 3.22) does not support refinements, so the
-global installation approach is required.
 
 The following sections give examples of how PuTTY::Key can be used.
 
