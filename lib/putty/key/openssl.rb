@@ -53,10 +53,14 @@ module PuTTY
               priv_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
 
               if pkey.respond_to?(:set_key)
+                # :nocov_no_openssl_pkey_dsa_set_key:
                 pkey.set_key(pub_key, priv_key)
                 pkey.set_pqg(p, q, g)
+                # :nocov_no_openssl_pkey_dsa_set_key:
               else
+                # :nocov_openssl_pkey_dsa_set_key:
                 pkey.p, pkey.q, pkey.g, pkey.pub_key, pkey.priv_key = p, q, g, pub_key, priv_key
+                # :nocov_openssl_pkey_dsa_set_key:
               end
             end
           when 'ssh-rsa'
@@ -68,11 +72,15 @@ module PuTTY
               dmq1 = d % (q - 1)
 
               if pkey.respond_to?(:set_factors)
+                # :nocov_no_openssl_pkey_rsa_set_factors:
                 pkey.set_factors(p, q)
                 pkey.set_key(n, e, d)
                 pkey.set_crt_params(dmp1, dmq1, iqmp)
+                # :nocov_no_openssl_pkey_rsa_set_factors:
               else
+                # :nocov_openssl_pkey_rsa_set_factors:
                 pkey.e, pkey.n, pkey.d, pkey.p, pkey.q, pkey.iqmp, pkey.dmp1, pkey.dmq1 = e, n, d, p, q, iqmp, dmp1, dmq1
+                # :nocov_openssl_pkey_rsa_set_factors:
               end
             end
           when /\Aecdsa-sha2-(nistp(?:256|384|521))\z/

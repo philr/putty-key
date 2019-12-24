@@ -7,6 +7,12 @@ if TEST_COVERAGE
   require 'simplecov'
   require 'coveralls'
 
+  require 'openssl'
+
+  method_support = [[OpenSSL::PKey::DSA.new, :set_key], [OpenSSL::PKey::RSA.new, :set_factors]].map do |object, method|
+    "#{object.respond_to?(method) ? '' : 'no_'}#{Regexp.escape(object.class.name.downcase.gsub('::', '_'))}_#{Regexp.escape(method)}"
+  end
+
   SimpleCov.command_name TEST_TYPE.to_s
 
   SimpleCov.formatters = [
@@ -15,6 +21,7 @@ if TEST_COVERAGE
 
   SimpleCov.start do
     add_filter 'test'
+    nocov_token "nocov_(#{method_support.join('|')})"
     project_name 'PuTTY::Key'
   end
 end
