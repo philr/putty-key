@@ -1,9 +1,7 @@
 require 'test_helper'
 
 if TEST_TYPE == :refinement
-  # JRuby 9.0.5.0 ignores the conditional and imports the refinements
-  # regardless. Use send to prevent this.
-  send(:using, PuTTY::Key)
+  using PuTTY::Key
 end
 
 class OpenSSLTest < Minitest::Test

@@ -74,14 +74,11 @@ def define_test_task(type, test_coverage)
   Rake::Task[test_task].enhance([env_task])
 end
 
-# JRuby 9.0.5.0 doesn't handle refinements correctly.
 if RUBY_ENGINE == 'jruby'
   # Don't run coverage tests on JRuby due to inaccurate results.
   TEST_COVERAGE = false
 
-  task 'test:refinement' do
-    puts 'Skipping refinement tests on JRuby'
-  end
+  define_test_task(:refinement, TEST_COVERAGE)
 elsif !respond_to?(:using, true)
   # Don't run coverage tests on platforms that don't support refinements, since
   # it won't be possible to get complete coverage.
