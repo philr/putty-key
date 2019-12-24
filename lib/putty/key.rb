@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PuTTY
   # PuTTY::Key is a pure-Ruby implementation of the PuTTY private key (ppk)
   # format, handling reading and writing .ppk files. It includes a refinement to

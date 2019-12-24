@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 TEST_TYPE = (ENV['TEST_TYPE'] || 'refinement').to_sym
 raise "Unrecognized TEST_TYPE: #{TEST_TYPE}" unless [:refinement, :global].include?(TEST_TYPE)
 
