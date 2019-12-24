@@ -1,6 +1,6 @@
 # PuTTY::Key #
 
-[![Gem Version](https://badge.fury.io/rb/putty-key.svg)](http://badge.fury.io/rb/putty-key) [![Build Status](https://travis-ci.org/philr/putty-key.svg?branch=master)](https://travis-ci.org/philr/putty-key) [![Coverage Status](https://coveralls.io/repos/philr/putty-key/badge.svg?branch=master)](https://coveralls.io/r/philr/putty-key?branch=master)
+[![Gem Version](https://badge.fury.io/rb/putty-key.svg)](https://badge.fury.io/rb/putty-key) [![Build Status](https://travis-ci.org/philr/putty-key.svg?branch=master)](https://travis-ci.org/philr/putty-key) [![Coverage Status](https://coveralls.io/repos/philr/putty-key/badge.svg?branch=master)](https://coveralls.io/r/philr/putty-key?branch=master)
 
 PuTTY::Key is a pure-Ruby implementation of the PuTTY private key (ppk) format,
 handling reading and writing .ppk files. It includes a refinement to Ruby's
@@ -37,7 +37,7 @@ To use PuTTY::Key, it must first be loaded with:
 require 'putty/key'
 ```
 
-The included [refinement](http://ruby-doc.org/core-2.3.0/doc/syntax/refinements_rdoc.html)
+The included [refinement](https://ruby-doc.org/core-2.3.0/doc/syntax/refinements_rdoc.html)
 to Ruby's OpenSSL library can then either be activated in the lexical scope
 (file, class or module) where it will be used with:
 
@@ -110,7 +110,7 @@ ppk.save('rsa-plain.ppk')
 ## API Documentation ##
 
 API documentation for PuTTY::Key is available on
-[RubyDoc.info](http://www.rubydoc.info/gems/putty-key).
+[RubyDoc.info](https://www.rubydoc.info/gems/putty-key).
 
 
 ## License ##
