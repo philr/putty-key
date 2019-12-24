@@ -19,9 +19,9 @@ module PuTTY
   end
 end
 
-require 'putty/key/version'
-require 'putty/key/error'
-require 'putty/key/util'
-require 'putty/key/ppk'
-require 'putty/key/openssl'
+require_relative 'key/version'
+require_relative 'key/error'
+require_relative 'key/util'
+require_relative 'key/ppk'
+require_relative 'key/openssl'
 

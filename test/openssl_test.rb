@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require_relative 'test_helper'
 
 if TEST_TYPE == :refinement
   using PuTTY::Key
