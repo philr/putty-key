@@ -45,15 +45,31 @@ module PuTTY
           case ppk.algorithm
           when 'ssh-dss'
             ::OpenSSL::PKey::DSA.new.tap do |pkey|
-              _, pkey.p, pkey.q, pkey.g, pkey.pub_key = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint, :mpint, :mpint)
-              pkey.priv_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
+              _, p, q, g, pub_key = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint, :mpint, :mpint)
+              priv_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
+
+              if pkey.respond_to?(:set_key)
+                pkey.set_key(pub_key, priv_key)
+                pkey.set_pqg(p, q, g)
+              else
+                pkey.p, pkey.q, pkey.g, pkey.pub_key, pkey.priv_key = p, q, g, pub_key, priv_key
+              end
             end
           when 'ssh-rsa'
             ::OpenSSL::PKey::RSA.new.tap do |pkey|
-              _, pkey.e, pkey.n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
-              pkey.d, pkey.p, pkey.q, pkey.iqmp = Util.ssh_unpack(ppk.private_blob, :mpint, :mpint, :mpint, :mpint)
-              pkey.dmp1 = pkey.d % (pkey.p - 1)
-              pkey.dmq1 = pkey.d % (pkey.q - 1)
+              _, e, n = Util.ssh_unpack(ppk.public_blob, :string, :mpint, :mpint)
+              d, p, q, iqmp = Util.ssh_unpack(ppk.private_blob, :mpint, :mpint, :mpint, :mpint)
+
+              dmp1 = d % (p - 1)
+              dmq1 = d % (q - 1)
+
+              if pkey.respond_to?(:set_factors)
+                pkey.set_factors(p, q)
+                pkey.set_key(n, e, d)
+                pkey.set_crt_params(dmp1, dmq1, iqmp)
+              else
+                pkey.e, pkey.n, pkey.d, pkey.p, pkey.q, pkey.iqmp, pkey.dmp1, pkey.dmq1 = e, n, d, p, q, iqmp, dmp1, dmq1
+              end
             end
           when /\Aecdsa-sha2-(nistp(?:256|384|521))\z/
             curve = OPENSSL_CURVES[$1]
