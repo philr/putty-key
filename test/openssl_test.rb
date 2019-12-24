@@ -20,28 +20,28 @@ class OpenSSLTest < Minitest::Test
     ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048.ppk'))
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::RSA, pkey)
-    assert_equal(load_fixture('rsa-2048.pem'), pkey.to_pem)
+    assert_equal(normalize_pem_fixture('rsa-2048.pem'), pkey.to_pem)
   end
 
   def test_from_ppk_rsa_encrypted
     ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048-encrypted.ppk'), 'Test Passphrase')
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::RSA, pkey)
-    assert_equal(load_fixture('rsa-2048.pem'), pkey.to_pem)
+    assert_equal(normalize_pem_fixture('rsa-2048.pem'), pkey.to_pem)
   end
 
   def test_from_ppk_dss
     ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024.ppk'))
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::DSA, pkey)
-    assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
+    assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
   end
 
   def test_from_ppk_dss_encrypted
     ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted.ppk'), 'Test Passphrase')
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::DSA, pkey)
-    assert_equal(load_fixture('dss-1024.pem'), pkey.to_pem)
+    assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
   end
 
   # jruby-openssl doesn't include an EC class (version 0.9.16)
@@ -50,42 +50,42 @@ class OpenSSLTest < Minitest::Test
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256.ppk'))
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
-      assert_equal(load_fixture('ecdsa-sha2-nistp256.pem'), pkey.to_pem)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
     def test_from_ppk_ecdsa_sha2_nistp256_encrypted
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted.ppk'), 'Test Passphrase')
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
-      assert_equal(load_fixture('ecdsa-sha2-nistp256.pem'), pkey.to_pem)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
     def test_from_ppk_ecdsa_sha2_nistp384
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384.ppk'))
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
-      assert_equal(load_fixture('ecdsa-sha2-nistp384.pem'), pkey.to_pem)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
     def test_from_ppk_ecdsa_sha2_nistp384_encrypted
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted.ppk'), 'Test Passphrase')
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
-      assert_equal(load_fixture('ecdsa-sha2-nistp384.pem'), pkey.to_pem)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
     def test_from_ppk_ecdsa_sha2_nistp521
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521.ppk'))
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
-      assert_equal(load_fixture('ecdsa-sha2-nistp521.pem'), pkey.to_pem)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
     def test_from_ppk_ecdsa_sha2_nistp521_encrypted
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted.ppk'), 'Test Passphrase')
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
-      assert_equal(load_fixture('ecdsa-sha2-nistp521.pem'), pkey.to_pem)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
   else
     def test_from_ppk_ecdsa_sha2_nistp256
@@ -119,17 +119,26 @@ class OpenSSLTest < Minitest::Test
     end
   end
 
-  def pem_to_ppk(fixture, type = nil)
+  def load_key(fixture, type = nil)
     pem = load_fixture(fixture)
 
     # Accessing OpenSSL::PKey::EC#public_key raises a warning when the key was
     # loaded with OpenSSL::PKey.read(pem), but doesn't when instantiated with
     # OpenSSL::PKey::EC.new(pem) (Ruby 2.3.0).
-    pkey = type ? type.new(pem) : OpenSSL::PKey.read(pem)
+    type ? type.new(pem) : OpenSSL::PKey.read(pem)
+  end
+
+  def pem_to_ppk(fixture, type = nil)
+    pkey = load_key(fixture, type)
 
     pkey.to_ppk.tap do |ppk|
       assert_nil(ppk.comment)
     end
+  end
+
+  def normalize_pem_fixture(fixture, type = nil)
+    pkey = load_key(fixture, type)
+    pkey.to_pem
   end
 
   def test_to_ppk_rsa
