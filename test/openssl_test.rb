@@ -44,7 +44,7 @@ class OpenSSLTest < Minitest::Test
     assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
   end
 
-  # jruby-openssl doesn't include an EC class (version 0.9.16)
+  # Old versions of jruby-openssl don't include an EC class (version 0.9.16).
   if defined?(OpenSSL::PKey::EC)
     def test_from_ppk_ecdsa_sha2_nistp256
       ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256.ppk'))
@@ -187,7 +187,7 @@ class OpenSSLTest < Minitest::Test
     assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
   end
 
-  # jruby-openssl doesn't include an EC class (version 0.9.15)
+  # Old versions of jruby-openssl don't include an EC class (version 0.9.16).
   if defined?(OpenSSL::PKey::EC)
     def test_to_ppk_ecdsa_sha2_nistp256
       ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)

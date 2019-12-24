@@ -17,6 +17,10 @@ module PuTTY
 
       # Mapping from OpenSSL curve names to their equivalent SSH names.
       SSH_CURVES = OPENSSL_CURVES.invert
+
+      # Add an alternative alias for nistp256 used by JRuby.
+      SSH_CURVES['secp256r1'] = 'nistp256'
+
       private_constant :SSH_CURVES
 
       # The {ClassMethods} module is used to extend `OpenSSL::PKey` when
@@ -74,12 +78,13 @@ module PuTTY
           when /\Aecdsa-sha2-(nistp(?:256|384|521))\z/
             curve = OPENSSL_CURVES[$1]
 
-            # jruby-openssl doesn't include an EC class (version 0.9.16)
+            # Old versions of jruby-openssl don't include an EC class (version 0.9.16).
             ec_class = (::OpenSSL::PKey::EC rescue raise ArgumentError, "Unsupported algorithm: #{ppk.algorithm}")
 
             ec_class.new(curve).tap do |pkey|
               _, _, point = Util.ssh_unpack(ppk.public_blob, :string, :string, :mpint)
-              pkey.public_key = ::OpenSSL::PKey::EC::Point.new(pkey.group, point)
+              group = pkey.group || ::OpenSSL::PKey::EC::Group.new(curve)
+              pkey.public_key = ::OpenSSL::PKey::EC::Point.new(group, point)
               pkey.private_key = Util.ssh_unpack(ppk.private_blob, :mpint).first
             end
           else
