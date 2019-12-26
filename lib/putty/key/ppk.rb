@@ -25,7 +25,7 @@ module PuTTY
     # was only used briefly early on in the development of the .ppk format.
     class PPK
       # String used in the computation of the private MAC.
-      MAC_KEY = 'putty-private-key-file-mac-key'#.b#.freeze
+      MAC_KEY = 'putty-private-key-file-mac-key'
       private_constant :MAC_KEY
 
       # The default (and only supported) encryption algorithm.
