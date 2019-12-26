@@ -1,9 +1,9 @@
 language: ruby
 dist: xenial
 before_install:
-  - if [[ $TRAVIS_RUBY_VERSION =~ ^(2\.[12])\. ]]; then gem install rubygems-update --version '~> 2.7' --no-document && update_rubygems; else gem update --system; fi
+  - if [[ $TRAVIS_RUBY_VERSION =~ ^2\.[12]\. ]]; then gem install rubygems-update --version '~> 2.7' --no-document && update_rubygems; else gem update --system; fi
   - gem --version
-  - if [[ $TRAVIS_RUBY_VERSION =~ ^(2\.[12])\. ]]; then gem install bundler --version '~> 1.17'; else gem install bundler; fi
+  - if [[ $TRAVIS_RUBY_VERSION =~ ^2\.[12]\. ]]; then gem install bundler --version '~> 1.17'; else gem install bundler; fi
   - bundle --version
 before_script:
   - bundle update
