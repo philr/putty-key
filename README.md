@@ -1,6 +1,6 @@
 # PuTTY::Key #
 
-[![Gem Version](https://badge.fury.io/rb/putty-key.svg)](https://badge.fury.io/rb/putty-key) [![Build Status](https://travis-ci.org/philr/putty-key.svg?branch=master)](https://travis-ci.org/philr/putty-key) [![Build status](https://ci.appveyor.com/api/projects/status/btinuu4g8sdachj3/branch/master?svg=true)](https://ci.appveyor.com/project/philr/tzinfo/branch/master) [![Coverage Status](https://coveralls.io/repos/philr/putty-key/badge.svg?branch=master)](https://coveralls.io/r/philr/putty-key?branch=master)
+[![RubyGems](https://img.shields.io/gem/v/putty-key?logo=rubygems&label=Gem)](https://rubygems.org/gems/putty-key) [![Tests](https://github.com/philr/putty-key/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/philr/putty-key/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush) [![Coverage Status](https://img.shields.io/coveralls/github/philr/putty-key/master?label=Coverage&logo=Coveralls)](https://coveralls.io/github/philr/putty-key?branch=master)
 
 PuTTY::Key is a pure-Ruby implementation of the PuTTY private key (ppk) format,
 handling reading and writing .ppk files. It includes a refinement to Ruby's

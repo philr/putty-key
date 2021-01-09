@@ -105,3 +105,27 @@ end
 desc 'Run tests using the refinement, then with the global install'
 task :test => [:clean_coverage, 'test:refinement', 'test:global'] + (TEST_COVERAGE ? ['coveralls:push'] : []) do
 end
+
+# Coveralls expects an sh compatible shell when running git commands with Kernel#`
+# On Windows, the results end up wrapped in single quotes.
+# Patch Coveralls::Configuration to remove the quotes.
+if RUBY_PLATFORM =~ /mingw/
+  module CoverallsFixConfigurationOnWindows
+    def self.included(base)
+      base.instance_eval do
+        class << self
+          alias_method :git_without_windows_fix, :git
+
+          def git
+            git_without_windows_fix.tap do |hash|
+              hash[:head] = hash[:head].map {|k, v| [k, v =~ /\A'(.*)'\z/ ? $1 : v] }.to_h
+            end
+          end
+        end
+      end
+    end
+  end
+
+  require 'coveralls'
+  Coveralls::Configuration.send(:include, CoverallsFixConfigurationOnWindows)
+end
