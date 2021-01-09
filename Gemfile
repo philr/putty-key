@@ -14,10 +14,4 @@ group :test do
   # coveralls_reborn is maintained, but requires Ruby >= 2.3.
   gem 'coveralls', '~> 0.8', require: false if RUBY_VERSION < '2.3'
   gem 'coveralls_reborn', '~> 0.13', require: false if RUBY_VERSION >= '2.3'
-
-  # json is a dependency of simplecov. Version 2.3.0 is declared as compatible
-  # with Ruby >= 1.9, but actually fails with a syntax error.
-  #
-  # Limit to earlier versions on Ruby 1.9.
-  gem 'json', '< 2.3.0', require: false if RUBY_VERSION < '2.0'
 end
