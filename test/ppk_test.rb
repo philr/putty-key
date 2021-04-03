@@ -16,18 +16,36 @@ class PPKTest < Minitest::Test
     assert_nil(ppk.private_blob)
   end
 
-  def test_initialize_invalid_format
-    [1,3].each do |format|
-      assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path("test-invalid-format-#{format}.ppk")) }
+  def test_initialize_invalid_format_too_old
+    format = PuTTY::Key::PPK::MINIMUM_FORMAT - 1
+    error = assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path("test-invalid-format-#{format}.ppk")) }
+    assert_equal("The ppk file is using an old unsupported format (#{format})", error.message)
+  end
+
+  def test_initialize_invalid_format_too_new
+    format = PuTTY::Key::PPK::MAXIMUM_FORMAT + 1
+    error = assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path("test-invalid-format-#{format}.ppk")) }
+    assert_equal("The ppk file is using a format that is too new (#{format})", error.message)
+  end
+
+  [:encryption_type, :key_derivation, :argon2_memory, :argon2_passes, :argon2_parallelism, :argon2_salt].each do |feature|
+    define_method("test_initialize_invalid_#{feature}") do
+      path = fixture_path("test-invalid-#{feature.to_s.gsub('_', '-')}.ppk")
+      assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(path, 'Test Passphrase') }
     end
   end
 
-  def test_initialize_invalid_encryption_type
-    assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path('test-invalid-encryption-type.ppk')) }
+  [:private_mac, :blob_lines].each do |feature|
+    define_method("test_initialize_invalid_#{feature}") do
+      path = fixture_path("test-invalid-#{feature.to_s.gsub('_', '-')}.ppk")
+      assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(path) }
+    end
   end
 
-  def test_initialize_invalid_private_mac
-    assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path('test-invalid-private-mac.ppk')) }
+  def test_initialize_invalid_argon2_memory_for_libargon2
+    # Allowed by Argon2Params, but not by libargon2.
+    path = fixture_path("test-invalid-argon2-memory-for-libargon2.ppk")
+    assert_raises(PuTTY::Key::Argon2Error) { PuTTY::Key::PPK.new(path, 'Test Passphrase') }
   end
 
   def test_initialize_file_not_exists
@@ -42,10 +60,6 @@ class PPKTest < Minitest::Test
 
   def test_initialize_truncated
     assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path('test-truncated.ppk')) }
-  end
-
-  def test_initialize_invalid_blob_lines
-    assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path('test-invalid-blob-lines.ppk')) }
   end
 
   def assert_test_ppk_properties(ppk, comment: TEST_COMMENT, encrypted: false)
@@ -65,9 +79,34 @@ class PPKTest < Minitest::Test
     end
   end
 
-  def test_initialize_unencrypted
-    ppk = PuTTY::Key::PPK.new(fixture_path('test.ppk'))
-    assert_test_ppk_properties(ppk)
+  [2, 3].each do |format|
+    define_method("test_initialize_unencrypted_format_#{format}") do
+      ppk = PuTTY::Key::PPK.new(fixture_path("test-format-#{format}.ppk"))
+      assert_test_ppk_properties(ppk)
+    end
+
+    define_method("test_initialize_encrypted_format_#{format}") do
+      ppk = PuTTY::Key::PPK.new(fixture_path("test-encrypted-format-#{format}.ppk"), 'Test Passphrase')
+      assert_test_ppk_properties(ppk, encrypted: true)
+    end
+
+    define_method("test_initialize_encrypted_no_passphrase_#{format}") do
+      path = fixture_path("test-encrypted-format-#{format}.ppk")
+      assert_raises(ArgumentError) { PuTTY::Key::PPK.new(path) }
+    end
+
+    define_method("test_initialize_encrypted_incorrect_passphrase_#{format}") do
+      path = fixture_path("test-encrypted-format-#{format}.ppk")
+      assert_raises(ArgumentError) { PuTTY::Key::PPK.new(path, 'Not Test Passphrase') }
+    end
+  end
+
+  # type-d and type-i fixtures also use different Argon2 parameters.
+  [:d, :i].each do |type|
+    define_method("test_initialize_encrypted_format_3_type_#{type}") do
+      ppk = PuTTY::Key::PPK.new(fixture_path("test-encrypted-type-#{type}-format-3.ppk"), 'Test Passphrase')
+      assert_test_ppk_properties(ppk, encrypted: true)
+    end
   end
 
   def test_initialize_blank_comment
@@ -75,21 +114,8 @@ class PPKTest < Minitest::Test
     assert_test_ppk_properties(ppk, comment: ''.b)
   end
 
-  def test_initialize_encrypted
-    ppk = PuTTY::Key::PPK.new(fixture_path('test-encrypted.ppk'), 'Test Passphrase')
-    assert_test_ppk_properties(ppk, encrypted: true)
-  end
-
-  def test_initialize_encrypted_no_passphrase
-    assert_raises(ArgumentError) { PuTTY::Key::PPK.new(fixture_path('test-encrypted.ppk')) }
-  end
-
-  def test_initialize_encrypted_incorrect_passphrase
-    assert_raises(ArgumentError) { PuTTY::Key::PPK.new(fixture_path('test-encrypted.ppk'), 'Not Test Passphrase') }
-  end
-
   def test_initialize_pathname
-    ppk = PuTTY::Key::PPK.new(Pathname.new(fixture_path('test.ppk')))
+    ppk = PuTTY::Key::PPK.new(Pathname.new(fixture_path('test-format-2.ppk')))
     assert_test_ppk_properties(ppk)
   end
 
@@ -140,10 +166,10 @@ class PPKTest < Minitest::Test
     end
   end
 
-  def test_save_format_not_supported
-    ppk = create_test_ppk
-    temp_file_name do |file|
-      [1,3].each do |format|
+  [PuTTY::Key::PPK::MINIMUM_FORMAT - 1, PuTTY::Key::PPK::MAXIMUM_FORMAT + 1].each do |format|
+    define_method("test_save_format_#{format}_not_supported") do
+      ppk = create_test_ppk
+      temp_file_name do |file|
         assert_raises(ArgumentError) { ppk.save(file, 'Test Passphrase', format: format) }
       end
     end
@@ -180,27 +206,93 @@ class PPKTest < Minitest::Test
     end
   end
 
-  def test_save_unencrypted
-    ppk = create_test_ppk
-    temp_file_name do |file|
-      ppk.save(file)
-      assert_identical_to_fixture('test.ppk', file)
+  [2, 3].each do |format|
+    define_method("test_save_unencrypted_format_#{format}") do
+      ppk = create_test_ppk
+      temp_file_name do |file|
+        ppk.save(file, format: format)
+        assert_identical_to_fixture("test-format-#{format}.ppk", file)
+      end
+    end
+
+    define_method("test_save_passphrase_empty_format_#{format}") do
+      ppk = create_test_ppk
+      temp_file_name do |file|
+        ppk.save(file, '', format: format)
+        assert_identical_to_fixture("test-format-#{format}.ppk", file)
+      end
+    end
+
+    define_method("test_save_encrypted_format_#{format}") do
+      ppk = create_test_ppk
+      temp_file_name do |file|
+        ppk.save(file, 'Test Passphrase', format: format, argon2_params: PuTTY::Key::Argon2Params.new(passes: 8, salt: "\x7d\x5d\x45\x57\xc5\x56\x3a\x5b\x50\x09\xe1\x45\x2c\x51\x8e\x04".b))
+        assert_identical_to_fixture("test-encrypted-format-#{format}.ppk", file)
+      end
     end
   end
 
-  def test_save_passphrase_empty
+  # type_d and type_i tests cover other Argon2 parameters too.
+  def test_save_encrypted_type_d_format_3
     ppk = create_test_ppk
     temp_file_name do |file|
-      ppk.save(file, '')
-      assert_identical_to_fixture('test.ppk', file)
+      ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(type: :d, memory: 4096, passes: 9, salt: "\xbc\x44\x19\x1a\xa9\x26\x73\xa5\xc0\x54\x3f\x37\x36\x33\xdd\xf4".b ))
+      assert_identical_to_fixture("test-encrypted-type-d-format-3.ppk", file)
     end
   end
 
-  def test_save_encrypted
+  def test_save_encrypted_type_i_format_3
     ppk = create_test_ppk
     temp_file_name do |file|
-      ppk.save(file, 'Test Passphrase')
-      assert_identical_to_fixture('test-encrypted.ppk', file)
+      ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(type: :i, memory: 2048, passes: 5, parallelism: 3, salt: "\xbd\x5e\x3d\x94\x03\xec\x37\x41\x8b\xa5\xae\x1d\x11\x6f\xa9\x75".b ))
+      assert_identical_to_fixture("test-encrypted-type-i-format-3.ppk", file)
+    end
+  end
+
+  def get_field(file, name)
+    line = File.readlines(file, mode: 'rb').find {|l| l.start_with?("#{name}: ")}
+    line && line.byteslice(name.bytesize + 2, line.bytesize - name.bytesize - 2).chomp("\n")
+  end
+
+  def test_save_chooses_random_salt
+    ppk = create_test_ppk
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase', format: 3)
+      salt1 = get_field(file, 'Argon2-Salt')
+      assert_match(/\A[0-9a-f]{32}\z/, salt1)
+
+      File.unlink(file)
+      ppk.save(file, 'Test Passphrase', format: 3)
+      salt2 = get_field(file, 'Argon2-Salt')
+      assert_match(/\A[0-9a-f]{32}\z/, salt2)
+
+      refute_equal(salt1, salt2)
+    end
+  end
+
+  def test_save_calculates_passes_required_for_time
+    ppk = create_test_ppk
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(desired_time: 0))
+      passes = get_field(file, 'Argon2-Passes').to_i
+      initial_passes = passes
+
+      100.step(by: 100, to: 1000) do |desired_time|
+        File.unlink(file)
+        ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(desired_time: desired_time))
+        passes = get_field(file, 'Argon2-Passes').to_i
+        break if passes > initial_passes
+      end
+
+      assert(passes > initial_passes)
+    end
+  end
+
+  def test_save_raises_error_if_libargon2_rejects_parameters
+    ppk = create_test_ppk
+    temp_file_name do |file|
+      argon2_params = PuTTY::Key::Argon2Params.new(memory: 1)
+      assert_raises(PuTTY::Key::Argon2Error) { ppk.save(file, 'Test Passphrase', format: 3, argon2_params: argon2_params) }
     end
   end
 
@@ -226,7 +318,7 @@ class PPKTest < Minitest::Test
     ppk = create_test_ppk
     temp_file_name do |file|
       ppk.save(Pathname.new(file))
-      assert_identical_to_fixture('test.ppk', file)
+      assert_identical_to_fixture('test-format-2.ppk', file)
     end
   end
 
@@ -235,7 +327,7 @@ class PPKTest < Minitest::Test
     temp_file_name do |file|
       File.open(file, 'w') { |f| f.write('not test.ppk') }
       ppk.save(file)
-      assert_identical_to_fixture('test.ppk', file)
+      assert_identical_to_fixture('test-format-2.ppk', file)
     end
   end
 

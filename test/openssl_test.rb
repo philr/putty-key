@@ -12,33 +12,61 @@ class OpenSSLTest < Minitest::Test
   end
 
   def test_from_ppk_unsupported_algorithm
-    ppk = PuTTY::Key::PPK.new(fixture_path('test.ppk'))
+    ppk = PuTTY::Key::PPK.new(fixture_path('test-format-2.ppk'))
     assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
   end
 
-  def test_from_ppk_rsa
-    ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048.ppk'))
+  def test_from_ppk_rsa_format_2
+    ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048-format-2.ppk'))
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::RSA, pkey)
     assert_equal(normalize_pem_fixture('rsa-2048.pem'), pkey.to_pem)
   end
 
-  def test_from_ppk_rsa_encrypted
-    ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048-encrypted.ppk'), 'Test Passphrase')
+  def test_from_ppk_rsa_encrypted_format_2
+    ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048-encrypted-format-2.ppk'), 'Test Passphrase')
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::RSA, pkey)
     assert_equal(normalize_pem_fixture('rsa-2048.pem'), pkey.to_pem)
   end
 
-  def test_from_ppk_dss
-    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024.ppk'))
+  def test_from_ppk_rsa_format_3
+    ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048-format-3.ppk'))
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::RSA, pkey)
+    assert_equal(normalize_pem_fixture('rsa-2048.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_rsa_encrypted_format_3
+    ppk = PuTTY::Key::PPK.new(fixture_path('rsa-2048-encrypted-format-3.ppk'), 'Test Passphrase')
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::RSA, pkey)
+    assert_equal(normalize_pem_fixture('rsa-2048.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_dss_format_2
+    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-format-2.ppk'))
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::DSA, pkey)
     assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
   end
 
-  def test_from_ppk_dss_encrypted
-    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted.ppk'), 'Test Passphrase')
+  def test_from_ppk_dss_encrypted_format_2
+    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted-format-2.ppk'), 'Test Passphrase')
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::DSA, pkey)
+    assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_dss_format_3
+    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-format-3.ppk'))
+    pkey = OpenSSL::PKey.from_ppk(ppk)
+    assert_kind_of(OpenSSL::PKey::DSA, pkey)
+    assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
+  end
+
+  def test_from_ppk_dss_encrypted_format_3
+    ppk = PuTTY::Key::PPK.new(fixture_path('dss-1024-encrypted-format-3.ppk'), 'Test Passphrase')
     pkey = OpenSSL::PKey.from_ppk(ppk)
     assert_kind_of(OpenSSL::PKey::DSA, pkey)
     assert_equal(normalize_pem_fixture('dss-1024.pem'), pkey.to_pem)
@@ -46,75 +74,147 @@ class OpenSSLTest < Minitest::Test
 
   # Old versions of jruby-openssl don't include an EC class (version 0.9.16).
   if defined?(OpenSSL::PKey::EC)
-    def test_from_ppk_ecdsa_sha2_nistp256
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256.ppk'))
+    def test_from_ppk_ecdsa_sha2_nistp256_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-format-2.ppk'))
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
       assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp256_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted.ppk'), 'Test Passphrase')
+    def test_from_ppk_ecdsa_sha2_nistp256_encrypted_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted-format-2.ppk'), 'Test Passphrase')
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
       assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp384
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384.ppk'))
+    def test_from_ppk_ecdsa_sha2_nistp256_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-format-3.ppk'))
+      pkey = OpenSSL::PKey.from_ppk(ppk)
+      assert_kind_of(OpenSSL::PKey::EC, pkey)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC), pkey.to_pem)
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp256_encrypted_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted-format-3.ppk'), 'Test Passphrase')
+      pkey = OpenSSL::PKey.from_ppk(ppk)
+      assert_kind_of(OpenSSL::PKey::EC, pkey)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC), pkey.to_pem)
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp384_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-format-2.ppk'))
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
       assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp384_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted.ppk'), 'Test Passphrase')
+    def test_from_ppk_ecdsa_sha2_nistp384_encrypted_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted-format-2.ppk'), 'Test Passphrase')
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
       assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp521
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521.ppk'))
+    def test_from_ppk_ecdsa_sha2_nistp384_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-format-3.ppk'))
+      pkey = OpenSSL::PKey.from_ppk(ppk)
+      assert_kind_of(OpenSSL::PKey::EC, pkey)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC), pkey.to_pem)
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp384_encrypted_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted-format-3.ppk'), 'Test Passphrase')
+      pkey = OpenSSL::PKey.from_ppk(ppk)
+      assert_kind_of(OpenSSL::PKey::EC, pkey)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC), pkey.to_pem)
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-format-2.ppk'))
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
       assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp521_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted.ppk'), 'Test Passphrase')
+    def test_from_ppk_ecdsa_sha2_nistp521_encrypted_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted-format-2.ppk'), 'Test Passphrase')
+      pkey = OpenSSL::PKey.from_ppk(ppk)
+      assert_kind_of(OpenSSL::PKey::EC, pkey)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC), pkey.to_pem)
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-format-3.ppk'))
+      pkey = OpenSSL::PKey.from_ppk(ppk)
+      assert_kind_of(OpenSSL::PKey::EC, pkey)
+      assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC), pkey.to_pem)
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_encrypted_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted-format-3.ppk'), 'Test Passphrase')
       pkey = OpenSSL::PKey.from_ppk(ppk)
       assert_kind_of(OpenSSL::PKey::EC, pkey)
       assert_equal(normalize_pem_fixture('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC), pkey.to_pem)
     end
   else
-    def test_from_ppk_ecdsa_sha2_nistp256
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256.ppk'))
+    def test_from_ppk_ecdsa_sha2_nistp256_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-format-2.ppk'))
       assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp256_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted.ppk'), 'Test Passphrase')
+    def test_from_ppk_ecdsa_sha2_nistp256_encrypted_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted-format-2.ppk'), 'Test Passphrase')
       assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp384
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384.ppk'))
+    def test_from_ppk_ecdsa_sha2_nistp256_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-format-3.ppk'))
       assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp384_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted.ppk'), 'Test Passphrase')
+    def test_from_ppk_ecdsa_sha2_nistp256_encrypted_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp256-encrypted-format-3.ppk'), 'Test Passphrase')
       assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp521
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521.ppk'))
+    def test_from_ppk_ecdsa_sha2_nistp384_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-format-2.ppk'))
       assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
     end
 
-    def test_from_ppk_ecdsa_sha2_nistp521_encrypted
-      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted.ppk'), 'Test Passphrase')
+    def test_from_ppk_ecdsa_sha2_nistp384_encrypted_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted-format-2.ppk'), 'Test Passphrase')
+      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp384_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-format-3.ppk'))
+      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp384_encrypted_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp384-encrypted-format-3.ppk'), 'Test Passphrase')
+      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-format-2.ppk'))
+      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_encrypted_format_2
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted-format-2.ppk'), 'Test Passphrase')
+      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-format-3.ppk'))
+      assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
+    end
+
+    def test_from_ppk_ecdsa_sha2_nistp521_encrypted_format_3
+      ppk = PuTTY::Key::PPK.new(fixture_path('ecdsa-sha2-nistp521-encrypted-format-3.ppk'), 'Test Passphrase')
       assert_raises(ArgumentError) { OpenSSL::PKey.from_ppk(ppk) }
     end
   end
@@ -141,21 +241,39 @@ class OpenSSLTest < Minitest::Test
     pkey.to_pem
   end
 
-  def test_to_ppk_rsa
+  def test_to_ppk_rsa_format_2
     ppk = pem_to_ppk('rsa-2048.pem')
     ppk.comment = '2048 bit RSA key'
     temp_file_name do |file|
       ppk.save(file)
-      assert_identical_to_fixture('rsa-2048.ppk', file)
+      assert_identical_to_fixture('rsa-2048-format-2.ppk', file)
     end
   end
 
-  def test_to_ppk_rsa_encrypted
+  def test_to_ppk_rsa_encrypted_format_2
     ppk = pem_to_ppk('rsa-2048.pem')
     ppk.comment = '2048 bit RSA key'
     temp_file_name do |file|
       ppk.save(file, 'Test Passphrase')
-      assert_identical_to_fixture('rsa-2048-encrypted.ppk', file)
+      assert_identical_to_fixture('rsa-2048-encrypted-format-2.ppk', file)
+    end
+  end
+
+  def test_to_ppk_rsa_format_3
+    ppk = pem_to_ppk('rsa-2048.pem')
+    ppk.comment = '2048 bit RSA key'
+    temp_file_name do |file|
+      ppk.save(file, format: 3)
+      assert_identical_to_fixture('rsa-2048-format-3.ppk', file)
+    end
+  end
+
+  def test_to_ppk_rsa_encrypted_format_3
+    ppk = pem_to_ppk('rsa-2048.pem')
+    ppk.comment = '2048 bit RSA key'
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(memory: 16384, parallelism: 2, passes: 14, salt: "\xcc\x2e\xc7\x12\xee\x7e\x17\xbc\x2b\x9e\x3c\x47\xf5\xbb\xb0\x66".b))
+      assert_identical_to_fixture('rsa-2048-encrypted-format-3.ppk', file)
     end
   end
 
@@ -164,21 +282,39 @@ class OpenSSLTest < Minitest::Test
     assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
   end
 
-  def test_to_ppk_dss
+  def test_to_ppk_dss_format_2
     ppk = pem_to_ppk('dss-1024.pem')
     ppk.comment = '1024 bit DSS key'
     temp_file_name do |file|
       ppk.save(file)
-      assert_identical_to_fixture('dss-1024.ppk', file)
+      assert_identical_to_fixture('dss-1024-format-2.ppk', file)
     end
   end
 
-  def test_to_ppk_dss_encrypted
+  def test_to_ppk_dss_encrypted_format_2
     ppk = pem_to_ppk('dss-1024.pem')
     ppk.comment = '1024 bit DSS key'
     temp_file_name do |file|
       ppk.save(file, 'Test Passphrase')
-      assert_identical_to_fixture('dss-1024-encrypted.ppk', file)
+      assert_identical_to_fixture('dss-1024-encrypted-format-2.ppk', file)
+    end
+  end
+
+  def test_to_ppk_dss_format_3
+    ppk = pem_to_ppk('dss-1024.pem')
+    ppk.comment = '1024 bit DSS key'
+    temp_file_name do |file|
+      ppk.save(file, format: 3)
+      assert_identical_to_fixture('dss-1024-format-3.ppk', file)
+    end
+  end
+
+  def test_to_ppk_dss_encrypted_format_3
+    ppk = pem_to_ppk('dss-1024.pem')
+    ppk.comment = '1024 bit DSS key'
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(passes: 13, salt: "\x1a\x21\x57\x42\xbf\x63\xed\x4e\xef\xed\x21\xdd\x07\x68\x36\x40".b))
+      assert_identical_to_fixture('dss-1024-encrypted-format-3.ppk', file)
     end
   end
 
@@ -189,57 +325,111 @@ class OpenSSLTest < Minitest::Test
 
   # Old versions of jruby-openssl don't include an EC class (version 0.9.16).
   if defined?(OpenSSL::PKey::EC)
-    def test_to_ppk_ecdsa_sha2_nistp256
+    def test_to_ppk_ecdsa_sha2_nistp256_format_2
       ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)
       ppk.comment = 'ECDSA NIST P-256 Key'
       temp_file_name do |file|
         ppk.save(file)
-        assert_identical_to_fixture('ecdsa-sha2-nistp256.ppk', file)
+        assert_identical_to_fixture('ecdsa-sha2-nistp256-format-2.ppk', file)
       end
     end
 
-    def test_to_ppk_ecdsa_sha2_nistp256_encrypted
+    def test_to_ppk_ecdsa_sha2_nistp256_encrypted_format_2
       ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)
       ppk.comment = 'ECDSA NIST P-256 Key'
       temp_file_name do |file|
         ppk.save(file, 'Test Passphrase')
-        assert_identical_to_fixture('ecdsa-sha2-nistp256-encrypted.ppk', file)
+        assert_identical_to_fixture('ecdsa-sha2-nistp256-encrypted-format-2.ppk', file)
       end
     end
 
-    def test_to_ppk_ecdsa_sha2_nistp384
+    def test_to_ppk_ecdsa_sha2_nistp256_format_3
+      ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)
+      ppk.comment = 'ECDSA NIST P-256 Key'
+      temp_file_name do |file|
+        ppk.save(file, format: 3)
+        assert_identical_to_fixture('ecdsa-sha2-nistp256-format-3.ppk', file)
+      end
+    end
+
+    def test_to_ppk_ecdsa_sha2_nistp256_encrypted_format_3
+      ppk = pem_to_ppk('ecdsa-sha2-nistp256.pem', OpenSSL::PKey::EC)
+      ppk.comment = 'ECDSA NIST P-256 Key'
+      temp_file_name do |file|
+        ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(type: :i, memory: 4096, passes: 12, salt: "\xba\x83\x64\xf0\xda\x7d\x81\x33\xbb\xd5\xf7\x39\x6a\xc2\x80\xf8".b))
+        assert_identical_to_fixture('ecdsa-sha2-nistp256-encrypted-format-3.ppk', file)
+      end
+    end
+
+    def test_to_ppk_ecdsa_sha2_nistp384_format_2
       ppk = pem_to_ppk('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC)
       ppk.comment = 'ECDSA NIST P-384 Key'
       temp_file_name do |file|
         ppk.save(file)
-        assert_identical_to_fixture('ecdsa-sha2-nistp384.ppk', file)
+        assert_identical_to_fixture('ecdsa-sha2-nistp384-format-2.ppk', file)
       end
     end
 
-    def test_to_ppk_ecdsa_sha2_nistp384_encrypted
+    def test_to_ppk_ecdsa_sha2_nistp384_encrypted_format_2
       ppk = pem_to_ppk('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC)
       ppk.comment = 'ECDSA NIST P-384 Key'
       temp_file_name do |file|
         ppk.save(file, 'Test Passphrase')
-        assert_identical_to_fixture('ecdsa-sha2-nistp384-encrypted.ppk', file)
+        assert_identical_to_fixture('ecdsa-sha2-nistp384-encrypted-format-2.ppk', file)
       end
     end
 
-    def test_to_ppk_ecdsa_sha2_nistp521
+    def test_to_ppk_ecdsa_sha2_nistp384_format_3
+      ppk = pem_to_ppk('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC)
+      ppk.comment = 'ECDSA NIST P-384 Key'
+      temp_file_name do |file|
+        ppk.save(file, format: 3)
+        assert_identical_to_fixture('ecdsa-sha2-nistp384-format-3.ppk', file)
+      end
+    end
+
+    def test_to_ppk_ecdsa_sha2_nistp384_encrypted_format_3
+      ppk = pem_to_ppk('ecdsa-sha2-nistp384.pem', OpenSSL::PKey::EC)
+      ppk.comment = 'ECDSA NIST P-384 Key'
+      temp_file_name do |file|
+        ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(type: :i, parallelism: 2, passes: 6, salt: "\x0e\xe1\x39\x3b\x17\xb1\xc6\xa7\x79\x2f\x13\xcb\x80\x5e\x49\x56".b))
+        assert_identical_to_fixture('ecdsa-sha2-nistp384-encrypted-format-3.ppk', file)
+      end
+    end
+
+    def test_to_ppk_ecdsa_sha2_nistp521_format_2
       ppk = pem_to_ppk('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC)
       ppk.comment = 'ECDSA NIST P-521 Key'
       temp_file_name do |file|
         ppk.save(file)
-        assert_identical_to_fixture('ecdsa-sha2-nistp521.ppk', file)
+        assert_identical_to_fixture('ecdsa-sha2-nistp521-format-2.ppk', file)
       end
     end
 
-    def test_to_ppk_ecdsa_sha2_nistp521_encrypted
+    def test_to_ppk_ecdsa_sha2_nistp521_encrypted_format_2
       ppk = pem_to_ppk('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC)
       ppk.comment = 'ECDSA NIST P-521 Key'
       temp_file_name do |file|
         ppk.save(file, 'Test Passphrase')
-        assert_identical_to_fixture('ecdsa-sha2-nistp521-encrypted.ppk', file)
+        assert_identical_to_fixture('ecdsa-sha2-nistp521-encrypted-format-2.ppk', file)
+      end
+    end
+
+    def test_to_ppk_ecdsa_sha2_nistp521_format_3
+      ppk = pem_to_ppk('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC)
+      ppk.comment = 'ECDSA NIST P-521 Key'
+      temp_file_name do |file|
+        ppk.save(file, format: 3)
+        assert_identical_to_fixture('ecdsa-sha2-nistp521-format-3.ppk', file)
+      end
+    end
+
+    def test_to_ppk_ecdsa_sha2_nistp521_encrypted_format_3
+      ppk = pem_to_ppk('ecdsa-sha2-nistp521.pem', OpenSSL::PKey::EC)
+      ppk.comment = 'ECDSA NIST P-521 Key'
+      temp_file_name do |file|
+        ppk.save(file, 'Test Passphrase', format: 3, argon2_params: PuTTY::Key::Argon2Params.new(type: :d, memory: 9220, passes: 13, salt: "\xea\x6c\x6e\xae\x1e\x22\xcb\x94\x49\xf8\x5c\x96\x57\xc2\x91\x57".b))
+        assert_identical_to_fixture('ecdsa-sha2-nistp521-encrypted-format-3.ppk', file)
       end
     end
 

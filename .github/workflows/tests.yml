@@ -42,6 +42,26 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
+      - name: Download argon2
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        run: |
+          Invoke-WebRequest `
+            -Uri https://github.com/philr/argon2-windows/releases/download/20190702/argon2-20190702-x64.zip `
+            -OutFile argon2.zip `
+            -MaximumRetryCount 10 `
+            -RetryIntervalSec 2
+          $RubyBinPath = Split-Path (Get-Command ${{ startsWith(matrix.ruby, 'jruby') && 'j' || '' }}ruby.exe).Path
+          Write-Host $RubyBinPath
+          $DllPath = Join-Path $RubyBinPath "Argon2OptDll.dll"
+          Add-Type -Assembly System.IO.Compression.FileSystem
+          $ZipPath = Join-Path (Get-Location).Path "argon2.zip"
+          $Zip = [IO.Compression.ZipFile]::OpenRead($ZipPath)
+          try {
+            $Entry = $Zip.GetEntry("Argon2OptDll.dll")
+            [IO.Compression.ZipFileExtensions]::ExtractToFile($Entry, $DllPath)
+          } finally {
+            $Zip.Dispose()
+          }
       - run: ruby --version
       - run: gem --version
       - run: bundle --version

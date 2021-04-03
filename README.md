@@ -2,11 +2,12 @@
 
 [![RubyGems](https://img.shields.io/gem/v/putty-key?logo=rubygems&label=Gem)](https://rubygems.org/gems/putty-key) [![Tests](https://github.com/philr/putty-key/workflows/Tests/badge.svg?branch=master&event=push)](https://github.com/philr/putty-key/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush) [![Coverage Status](https://img.shields.io/coveralls/github/philr/putty-key/master?label=Coverage&logo=Coveralls)](https://coveralls.io/github/philr/putty-key?branch=master)
 
-PuTTY::Key is a pure-Ruby implementation of the PuTTY private key (ppk) format,
-handling reading and writing .ppk files. It includes a refinement to Ruby's
-OpenSSL library to add support for converting DSA, EC and RSA private keys to
-and from PuTTY private key files. This allows OpenSSH ecdsa, ssh-dss and ssh-rsa
-private keys to be converted to and from PuTTY's private key format.
+PuTTY::Key is a Ruby implementation of the PuTTY private key (ppk) format
+(versions 2 and 3), handling reading and writing .ppk files. It includes a
+refinement to Ruby's OpenSSL library to add support for converting DSA, EC and
+RSA private keys to and from PuTTY private key files. This allows OpenSSH ecdsa,
+ssh-dss and ssh-rsa private keys to be converted to and from PuTTY's private key
+format.
 
 
 ## Installation ##
@@ -27,6 +28,22 @@ gem 'putty-key'
 ## Compatibility ##
 
 PuTTY::Key is compatible with Ruby MRI 2.1.0+ and JRuby 9.1.0.0+.
+
+
+## Formats ##
+
+Format 2 and 3 .ppk files are supported. Format 1 (not supported) was only used
+briefly early on in the development of the .ppk format and was never included in
+a PuTTY release. Format 2 is supported by PuTTY version 0.52 onwards. Format 3
+is supported by PuTTY version 0.75 onwards. By default, `PuTTY::Key::PPK` saves
+files using format 2. Format 3 can be selected with the `format` parameter.
+
+[libargon2](https://github.com/P-H-C/phc-winner-argon2) is required to load and
+save encrypted format 3 files. Binaries are typically available with your OS
+distribution. For Windows, binaries are available from the
+[argon2-windows](https://github.com/philr/argon2-windows/releases) repository.
+Use either Argon2OptDll.dll for CPUs supporting AVX or Argon2RefDll.dll
+otherwise.
 
 
 ## Usage ##
@@ -68,6 +85,9 @@ ppk.comment = 'Optional comment'
 ppk.save('key.ppk')
 ```
 
+Use `ppk.save('key.ppk', format: 3)` to save a format 3 file instead of
+format 2.
+
 
 ### Generating a new RSA key and saving it as an encrypted .ppk file ###
 
@@ -81,6 +101,9 @@ ppk = rsa.to_ppk
 ppk.comment = 'RSA 2048'
 ppk.save('rsa.ppk', 'Passphrase for encryption')
 ```
+
+Use `ppk.save('rsa.ppk', 'Passphrase for encryption', format: 3)` to save a
+format 3 file instead of format 2.
 
 
 ### Converting an unencrypted .ppk file to .pem format ###
@@ -105,6 +128,9 @@ require 'putty/key'
 ppk = PuTTY::Key::PPK.new('rsa.ppk', 'Passphrase for encryption')
 ppk.save('rsa-plain.ppk')
 ```
+
+Use `ppk.save('rsa-plain.ppk', format: 3)` to save a format 3 file instead of
+format 2.
 
 
 ## API Documentation ##

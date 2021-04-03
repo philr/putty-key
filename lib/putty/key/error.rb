@@ -18,6 +18,23 @@ module PuTTY
     class UnsupportedCurveError < Error
     end
 
+    # Indicates that libargon2 encountered an error hashing the passphrase to
+    # derive the keys for a format 3 .ppk file.
+    class Argon2Error < Error
+      # The error code returned by the `argon2_hash` function.
+      attr_reader :error_code
+
+      # Initializes a new {Argon2Error}.
+      #
+      # @param error_code [Integer] The error code returned by the `argon2_hash`
+      #   function.
+      # @param message [String] A description of the error.
+      def initialize(error_code, message)
+        super(message)
+        @error_code = error_code
+      end
+    end
+
     # Indicates that a nil value has been encountered.
     class NilValueError < Error
     end

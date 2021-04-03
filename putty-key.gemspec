@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.version = PuTTY::Key::VERSION
   s.summary = 'Reads and writes PuTTY private key (.ppk) files. Refines OpenSSL::PKey to allow key conversion.'
   s.description = <<-EOF
-PuTTY::Key is a pure-Ruby implementation of the PuTTY private key (ppk) format,
+PuTTY::Key is a Ruby implementation of the PuTTY private key (ppk) format,
 handling reading and writing .ppk files. It includes a refinement to Ruby's
 OpenSSL library to add support for converting DSA, EC and RSA private keys to
 and from PuTTY private key files. This allows OpenSSH ecdsa, ssh-dss and ssh-rsa
@@ -26,4 +26,6 @@ private keys to be converted to and from PuTTY's private key format.
                     '--markup' << 'markdown'
   s.extra_rdoc_files = ['CHANGES.md', 'LICENSE', 'README.md']
   s.required_ruby_version = '>= 2.1.0'
+  s.add_runtime_dependency 'ffi', '~> 1.0'
+  s.requirements = ['libargon2 to handle format 3 .ppk files']
 end
