@@ -210,8 +210,9 @@ module PuTTY
 
           # Pad using an SHA-1 hash of the unpadded private blob in order to
           # prevent an easily known plaintext attack on the last block.
-          padding_length = cipher.block_size - (@private_blob.bytesize % cipher.block_size)
-          padded_private_blob = @private_blob + ::OpenSSL::Digest::SHA1.new(@private_blob).digest[0, padding_length]
+          padding_length = cipher.block_size - ((@private_blob.bytesize - 1) % cipher.block_size) - 1
+          padded_private_blob = @private_blob
+          padded_private_blob += ::OpenSSL::Digest::SHA1.new(@private_blob).digest.byteslice(0, padding_length) if padding_length > 0
 
           encrypted_private_blob = cipher.update(padded_private_blob) + cipher.final
         else

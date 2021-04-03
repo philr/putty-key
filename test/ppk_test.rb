@@ -314,6 +314,43 @@ class PPKTest < Minitest::Test
     end
   end
 
+  def get_blob(file, name)
+    lines = File.readlines(file, mode: 'rb')
+    index = lines.find_index {|l| l.start_with?("#{name}-Lines: ")}
+    return nil unless index
+    line = lines[index]
+    count = line.byteslice(name.bytesize + 8, line.bytesize - name.bytesize - 2).chomp("\n").to_i
+    blob_lines = lines[index + 1, count]
+    blob_lines.join("\n").unpack('m48').first
+  end
+
+  [[15, 1], [16, 0], [17, 15], [18, 14], [30, 2], [31, 1], [32, 0]].each do |length, needed|
+    define_method("test_save_encrypted_pads_private_blob_of_length_#{length}_to_multiple_of_block_size_with_sha1") do
+      private_blob = "\0".b * length
+      ppk = create_test_ppk
+      ppk.private_blob = private_blob
+
+      temp_file_name do |file|
+        ppk.save(file, 'Test Passphrase')
+        encrypted_padded_private_blob = get_blob(file, 'Private')
+        assert_equal(length + needed, encrypted_padded_private_blob.bytesize)
+        assert_equal(private_blob, ppk.private_blob)
+
+        loaded_ppk = PuTTY::Key::PPK.new(file, 'Test Passphrase')
+        assert_equal(length + needed, loaded_ppk.private_blob.bytesize)
+
+        if needed == 0
+          assert_equal(private_blob, loaded_ppk.private_blob)
+        else
+          assert_equal(private_blob, loaded_ppk.private_blob.byteslice(0, length))
+          padding = loaded_ppk.private_blob.byteslice(length, needed)
+          expected_padding = OpenSSL::Digest::SHA1.new(private_blob).digest.byteslice(0, needed)
+          assert_equal(expected_padding, padding)
+        end
+      end
+    end
+  end
+
   def test_save_pathname
     ppk = create_test_ppk
     temp_file_name do |file|
