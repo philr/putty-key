@@ -138,7 +138,14 @@ module PuTTY
               mac_key, cipher.key, cipher.iv = derive_keys(format, cipher, passphrase, argon2_params)
               cipher.padding = 0
               encrypted_private_blob = reader.blob('Private')
-              @private_blob = cipher.update(encrypted_private_blob) + cipher.final
+
+              @private_blob = if encrypted_private_blob.bytesize > 0
+                partial = cipher.update(encrypted_private_blob)
+                final = cipher.final
+                partial + final
+              else
+                encrypted_private_blob
+              end
             end
 
             private_mac = reader.field('Private-MAC')
@@ -214,7 +221,13 @@ module PuTTY
           padded_private_blob = @private_blob
           padded_private_blob += ::OpenSSL::Digest::SHA1.new(@private_blob).digest.byteslice(0, padding_length) if padding_length > 0
 
-          encrypted_private_blob = cipher.update(padded_private_blob) + cipher.final
+          encrypted_private_blob = if padded_private_blob.bytesize > 0
+            partial = cipher.update(padded_private_blob)
+            final = cipher.final
+            partial + final
+          else
+            padded_private_blob
+          end
         else
           encryption_type = 'none'
           mac_key = derive_keys(format).first

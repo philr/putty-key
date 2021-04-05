@@ -62,20 +62,20 @@ class PPKTest < Minitest::Test
     assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(fixture_path('test-truncated.ppk')) }
   end
 
-  def assert_test_ppk_properties(ppk, comment: TEST_COMMENT, encrypted: false)
+  def assert_test_ppk_properties(ppk, comment: TEST_COMMENT, public_blob: TEST_PUBLIC_BLOB, private_blob: TEST_PRIVATE_BLOB, encrypted: false)
     assert_equal(Encoding::ASCII_8BIT, ppk.algorithm.encoding)
     assert_equal(Encoding::ASCII_8BIT, ppk.comment.encoding)
     assert_equal(Encoding::ASCII_8BIT, ppk.public_blob.encoding)
     assert_equal(Encoding::ASCII_8BIT, ppk.private_blob.encoding)
     assert_equal('test'.b, ppk.algorithm)
     assert_equal(comment, ppk.comment)
-    assert_equal(TEST_PUBLIC_BLOB, ppk.public_blob)
+    assert_equal(public_blob, ppk.public_blob)
 
     if encrypted
       # When loading an encrypted ppk file, the padding added to the private blob cannot be removed.
-      assert(ppk.private_blob.start_with?(TEST_PRIVATE_BLOB), "Private blob does not start with #{TEST_PRIVATE_BLOB}")
+      assert(ppk.private_blob.start_with?(private_blob), "Private blob does not start with #{TEST_PRIVATE_BLOB}")
     else
-      assert_equal(TEST_PRIVATE_BLOB, ppk.private_blob)
+      assert_equal(private_blob, ppk.private_blob)
     end
   end
 
@@ -112,6 +112,16 @@ class PPKTest < Minitest::Test
   def test_initialize_blank_comment
     ppk = PuTTY::Key::PPK.new(fixture_path('test-blank-comment.ppk'))
     assert_test_ppk_properties(ppk, comment: ''.b)
+  end
+
+  def test_initialize_empty_blobs
+    ppk = PuTTY::Key::PPK.new(fixture_path('test-empty-blobs.ppk'))
+    assert_test_ppk_properties(ppk, public_blob: ''.b, private_blob: ''.b, encrypted: true)
+  end
+
+  def test_initialize_empty_blobs_encrypted
+    ppk = PuTTY::Key::PPK.new(fixture_path('test-empty-blobs-encrypted.ppk'), 'Test Passphrase')
+    assert_test_ppk_properties(ppk, public_blob: ''.b, private_blob: ''.b, encrypted: true)
   end
 
   def test_initialize_pathname
@@ -314,6 +324,26 @@ class PPKTest < Minitest::Test
     end
   end
 
+  def test_save_empty_blobs
+    ppk = create_test_ppk
+    ppk.public_blob = ''.b
+    ppk.private_blob = ''.b
+    temp_file_name do |file|
+      ppk.save(file)
+      assert_identical_to_fixture('test-empty-blobs.ppk', file)
+    end
+  end
+
+  def test_save_empty_blobs_encrypted
+    ppk = create_test_ppk
+    ppk.public_blob = ''.b
+    ppk.private_blob = ''.b
+    temp_file_name do |file|
+      ppk.save(file, 'Test Passphrase')
+      assert_identical_to_fixture('test-empty-blobs-encrypted.ppk', file)
+    end
+  end
+
   def get_blob(file, name)
     lines = File.readlines(file, mode: 'rb')
     index = lines.find_index {|l| l.start_with?("#{name}-Lines: ")}
@@ -324,7 +354,7 @@ class PPKTest < Minitest::Test
     blob_lines.join("\n").unpack('m48').first
   end
 
-  [[15, 1], [16, 0], [17, 15], [18, 14], [30, 2], [31, 1], [32, 0]].each do |length, needed|
+  [[0, 0], [15, 1], [16, 0], [17, 15], [18, 14], [30, 2], [31, 1], [32, 0]].each do |length, needed|
     define_method("test_save_encrypted_pads_private_blob_of_length_#{length}_to_multiple_of_block_size_with_sha1") do
       private_blob = "\0".b * length
       ppk = create_test_ppk
