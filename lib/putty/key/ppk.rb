@@ -122,9 +122,9 @@ module PuTTY
 
               argon2_params = if format >= 3
                 type = get_argon2_type(reader.field('Key-Derivation'))
-                memory = reader.positive_integer('Argon2-Memory')
-                passes = reader.positive_integer('Argon2-Passes')
-                parallelism = reader.positive_integer('Argon2-Parallelism')
+                memory = reader.unsigned_integer('Argon2-Memory')
+                passes = reader.unsigned_integer('Argon2-Passes')
+                parallelism = reader.unsigned_integer('Argon2-Parallelism')
                 salt = reader.field('Argon2-Salt')
                 unless salt =~ /\A(?:[0-9a-fA-F]{2})+\z/
                   raise FormatError, "Expected the Argon2-Salt field to be a hex string, but found #{salt}"
@@ -523,7 +523,7 @@ module PuTTY
           captures.empty? ? value : captures + [value]
         end
 
-        # Reads the next field from the file as a positive integer.
+        # Reads the next field from the file as an unsigned integer.
         #
         # @param name [String] The expected field name.
         #
@@ -532,11 +532,11 @@ module PuTTY
         # @raise [FormatError] If the current position in the file was not the
         #   start of a field with the expected name.
         # @raise [FormatError] If the field did not contain a positive integer.
-        def positive_integer(name)
+        def unsigned_integer(name)
           value = field(name)
           value = value =~ /\A[0-9]+\z/ && value.to_i
-          unless value && value >= 1
-            raise FormatError, "Expected field #{name} to contain a postive integer value, but found #{value}"
+          unless value
+            raise FormatError, "Expected field #{name} to contain an unsigned integer value, but found #{value}"
           end
           value
         end
@@ -551,7 +551,7 @@ module PuTTY
         # @raise [FormatError] If the value of the Lines field is not a
         #   positive integer.
         def blob(name)
-          lines = positive_integer("#{name}-Lines")
+          lines = unsigned_integer("#{name}-Lines")
           lines.times.map { read_line }.join("\n").unpack('m48').first
         end
 
