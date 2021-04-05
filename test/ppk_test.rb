@@ -28,7 +28,10 @@ class PPKTest < Minitest::Test
     assert_equal("The ppk file is using a format that is too new (#{format})", error.message)
   end
 
-  [:encryption_type, :key_derivation, :argon2_memory, :argon2_passes, :argon2_parallelism, :argon2_salt].each do |feature|
+  [:encryption_type, :key_derivation, :argon2_memory, :argon2_memory_maximum,
+    :argon2_passes, :argon2_passes_maximum, :argon2_parallelism,
+    :argon2_parallelism_maximum, :argon2_salt
+  ].each do |feature|
     define_method("test_initialize_invalid_#{feature}") do
       path = fixture_path("test-invalid-#{feature.to_s.gsub('_', '-')}.ppk")
       assert_raises(PuTTY::Key::FormatError) { PuTTY::Key::PPK.new(path, 'Test Passphrase') }

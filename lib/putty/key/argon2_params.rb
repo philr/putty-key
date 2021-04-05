@@ -51,21 +51,22 @@ module PuTTY
       #   derive keys in milliseconds.
       #
       # @raise [ArgumentError] If `type` is not either `:d`, `:i` or `:id`.
-      # @raise [ArgumentError] If `memory` is not an `Integer` or is negative.
-      # @raise [ArgumentError] If `parallelism` is not an `Integer` or is
-      #   negative.
-      # @raise [ArgumentError] If `passes` is specified, but is not an `Integer`
-      #   or is negative.
+      # @raise [ArgumentError] If `memory` is not an `Integer`, is negative or
+      #   greater than 2³².
+      # @raise [ArgumentError] If `parallelism` is not an `Integer`, is negative
+      #   or greater than 2³².
+      # @raise [ArgumentError] If `passes` is specified, but is not an
+      #   `Integer`, is negative or greater than 2³².
       # @raise [ArgumentError] If `salt` is specified, but is not a `String`.
       # @raise [ArgumentError] If `desired_time` is not `Numeric` or is
       #   negative.
       def initialize(type: :id, memory: 8192, parallelism: 1, passes: nil, salt: nil, desired_time: 100)
         raise ArgumentError, 'type must be :d, :i or :id' unless type == :id || type == :i || type == :d
-        raise ArgumentError, 'memory must be a non-negative Integer' unless memory.kind_of?(Integer) && memory >= 0
-        raise ArgumentError, 'parallelism must be a non-negative Integer' unless parallelism.kind_of?(Integer) && parallelism >= 0
-        raise ArgumentError, 'passes must be nil or a non-negative Integer' if passes && !(passes.kind_of?(Integer) && passes >= 0)
+        raise ArgumentError, 'memory must be a non-negative Integer' unless memory.kind_of?(Integer) && memory >= 0 && memory <= 2**32
+        raise ArgumentError, 'parallelism must be a non-negative Integer' unless parallelism.kind_of?(Integer) && parallelism >= 0 && parallelism <= 2**32
+        raise ArgumentError, 'passes must be nil or a non-negative Integer' if passes && !(passes.kind_of?(Integer) && passes >= 0 && passes <= 2**32)
         raise ArgumentError, 'salt must be nil or a String' if salt && !salt.kind_of?(String)
-        raise ArgumentError, 'desired_time must be a non-negative Numeric' unless desired_time.kind_of?(Numeric) && desired_time >= 0
+        raise ArgumentError, 'desired_time must be a non-negative Numeric' unless desired_time.kind_of?(Numeric) && desired_time >= 0 && desired_time <= 2**32
 
         @type = type
         @memory = memory

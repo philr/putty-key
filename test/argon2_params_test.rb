@@ -16,20 +16,20 @@ class Argon2ParamsTest < Minitest::Test
     end
   end
 
-  [0, 1024, 16384].each do |memory|
+  [0, 1024, 16384, 2**32].each do |memory|
     define_method("test_valid_memory_#{memory}") do
       params = PuTTY::Key::Argon2Params.new(memory: memory)
       assert_equal(memory, params.memory)
     end
   end
 
-  [-1, 1024.1, '1024', nil].each do |memory|
+  [-1, 2**32 + 1, 1024.1, '1024', nil].each do |memory|
     define_method("test_invalid_memory_#{memory.class.name.downcase}_#{memory}") do
       assert_raises(ArgumentError) { PuTTY::Key::Argon2Params.new(memory: memory) }
     end
   end
 
-  [nil, 0, 10].each do |passes|
+  [nil, 0, 10, 2**32].each do |passes|
     define_method("test_valid_passes_#{passes || 'nil'}") do
       params = PuTTY::Key::Argon2Params.new(passes: passes)
       if passes
@@ -40,20 +40,20 @@ class Argon2ParamsTest < Minitest::Test
     end
   end
 
-  [-1, 1.1, '1'].each do |passes|
+  [-1, 2**32 + 1, 1.1, '1'].each do |passes|
     define_method("test_invalid_passes_#{passes.class.name.downcase}_#{passes}") do
       assert_raises(ArgumentError) { PuTTY::Key::Argon2Params.new(passes: passes) }
     end
   end
 
-  [0, 2].each do |parallelism|
+  [0, 2, 2**32].each do |parallelism|
     define_method("test_valid_parallelism_#{parallelism}") do
       params = PuTTY::Key::Argon2Params.new(parallelism: parallelism)
       assert_equal(parallelism, params.parallelism)
     end
   end
 
-  [nil, -1, 2.1, '2'].each do |parallelism|
+  [nil, -1, 2**32 + 1, 2.1, '2'].each do |parallelism|
     define_method("test_invalid_parallelism_#{parallelism.class.name.downcase}_#{parallelism || 'nil'}") do
       assert_raises(ArgumentError) { PuTTY::Key::Argon2Params.new(parallelism: parallelism) }
     end
@@ -128,7 +128,7 @@ class Argon2ParamsTest < Minitest::Test
     assert_equal(123, complete_params.desired_time)
   end
 
-  [nil, -1, 1.1, '1'].each do |passes|
+  [nil, -1, 2**32 + 1, 1.1, '1'].each do |passes|
     define_method("test_complete_with_invalid_passes_#{passes.class.name.downcase}_#{passes || 'nil'}") do
       params = PuTTY::Key::Argon2Params.new(passes: nil, salt: nil)
       assert_raises(ArgumentError) { params.complete(passes, 'test_salt') }

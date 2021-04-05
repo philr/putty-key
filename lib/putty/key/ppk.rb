@@ -122,9 +122,9 @@ module PuTTY
 
               argon2_params = if format >= 3
                 type = get_argon2_type(reader.field('Key-Derivation'))
-                memory = reader.unsigned_integer('Argon2-Memory')
-                passes = reader.unsigned_integer('Argon2-Passes')
-                parallelism = reader.unsigned_integer('Argon2-Parallelism')
+                memory = reader.unsigned_integer('Argon2-Memory', maximum: 2**32)
+                passes = reader.unsigned_integer('Argon2-Passes', maximum: 2**32)
+                parallelism = reader.unsigned_integer('Argon2-Parallelism', maximum: 2**32)
                 salt = reader.field('Argon2-Salt')
                 unless salt =~ /\A(?:[0-9a-fA-F]{2})+\z/
                   raise FormatError, "Expected the Argon2-Salt field to be a hex string, but found #{salt}"
@@ -363,7 +363,9 @@ module PuTTY
               elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000
               break if (elapsed >= argon2_params.desired_time)
               hash_ptr.clear
-              prev_passes, passes = passes, passes + prev_passes
+              new_passes = passes + prev_passes
+              break if new_passes > 2**32 # maximum allowed by argon2_hash parameter data type
+              prev_passes, passes = passes, new_passes
             end
           end
 
@@ -545,12 +547,11 @@ module PuTTY
         # @raise [FormatError] If the current position in the file was not the
         #   start of a field with the expected name.
         # @raise [FormatError] If the field did not contain a positive integer.
-        def unsigned_integer(name)
+        def unsigned_integer(name, maximum: nil)
           value = field(name)
           value = value =~ /\A[0-9]+\z/ && value.to_i
-          unless value
-            raise FormatError, "Expected field #{name} to contain an unsigned integer value, but found #{value}"
-          end
+          raise FormatError, "Expected field #{name} to contain an unsigned integer value, but found #{value}" unless value
+          raise FormatError, "Expected field #{name} to have a maximum of #{maximum}, but found #{value}" if maximum && value > maximum
           value
         end
 
