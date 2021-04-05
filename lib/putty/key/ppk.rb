@@ -646,9 +646,9 @@ module PuTTY
 
         private
 
-        # Writes a line separator to the file (\r\n on all platforms).
+        # Writes a line separator to the file (\n on all platforms).
         def write_line
-          write("\r\n")
+          write("\n")
         end
 
         # Writes a string to the file.

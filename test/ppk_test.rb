@@ -132,8 +132,8 @@ class PPKTest < Minitest::Test
     assert_test_ppk_properties(ppk)
   end
 
-  def test_initialize_unix_line_endings
-    ppk = PuTTY::Key::PPK.new(fixture_path('test-unix-line-endings.ppk'))
+  def test_initialize_windows_line_endings
+    ppk = PuTTY::Key::PPK.new(fixture_path('test-windows-line-endings.ppk'))
     assert_test_ppk_properties(ppk)
   end
 
