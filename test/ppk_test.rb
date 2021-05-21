@@ -439,8 +439,9 @@ class PPKTest < Minitest::Test
     ppk = create_test_ppk
     temp_file_name do |file_name|
       File.open(file_name, 'w') do |file|
-        writer = TestWriter.new(file)
+        writer = TestWriterWithBinmode.new(file)
         ppk.save(writer)
+        assert_equal(1, writer.binmode_calls)
       end
       assert_identical_to_fixture('test-format-2.ppk', file_name)
     end
@@ -519,6 +520,8 @@ class PPKTest < Minitest::Test
   end
 
   class TestWriterWithBinmode < TestWriter
+    include BinmodeCallsTest
+
     def write(*args)
       raise 'binmode must be called before write' unless binmode_calls > 0
       super
