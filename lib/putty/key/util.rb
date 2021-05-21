@@ -9,17 +9,17 @@ module PuTTY
     #
     # @private
     module Util
-      # Encodes a list of values (String and OpenSSL::BN instances) according
-      # to RFC 4251 section 5 (as strings and mpints).
+      # Encodes a list of values (`String` and `OpenSSL::BN` instances)
+      # according to RFC 4251 section 5 (as strings and mpints).
       #
-      # No encoding conversion is performed on Strings.
+      # No encoding conversion is performed on `String` instances.
       #
-      # @param [Array] values An Array of String and OpenSSL::BN instances to
-      #   be encoded.
+      # @param [Array] values An Array of `String` and `OpenSSL::BN` instances
+      #   to be encoded.
       #
-      # @return [String] A binary String containing the encoded values.
+      # @return [String] A binary `String` containing the encoded values.
       #
-      # @raise NilValueError If a value is `nil`.
+      # @raise [NilValueError] If a value is `nil`.
       def self.ssh_pack(*values)
         return ''.b if values.empty?
 
@@ -62,11 +62,11 @@ module PuTTY
       # Decodes a string containing RFC 4251 section 5 encoded string and
       # mpint values.
       #
-      # @param [String] encoded A binary {String} containing the encoded values.
-      # @param [Array<Symbol>] spec An array consisting of :string or :mpint
+      # @param [String] encoded A binary `String` containing the encoded values.
+      # @param [Array<Symbol>] spec An array consisting of `:string` or `:mpint`
       #   elements describing the contents of encoded.
       #
-      # @return [Array] An array of decoded (binary) {String} and {OpenSSL::BN}
+      # @return [Array] An array of decoded (binary) `String` and `OpenSSL::BN`
       #   instances.
       #
       # @raise [ArgumentError] If `encoded` is `nil`.
