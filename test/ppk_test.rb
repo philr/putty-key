@@ -127,14 +127,21 @@ class PPKTest < Minitest::Test
     assert_test_ppk_properties(ppk, public_blob: ''.b, private_blob: ''.b, encrypted: true)
   end
 
+  def test_initialize_missing_final_line_ending
+    ppk = PuTTY::Key::PPK.new(fixture_path('test-missing-final-line-ending.ppk'))
+    assert_test_ppk_properties(ppk)
+  end
+
   def test_initialize_pathname
     ppk = PuTTY::Key::PPK.new(Pathname.new(fixture_path('test-format-2.ppk')))
     assert_test_ppk_properties(ppk)
   end
 
-  def test_initialize_windows_line_endings
-    ppk = PuTTY::Key::PPK.new(fixture_path('test-windows-line-endings.ppk'))
-    assert_test_ppk_properties(ppk)
+  %w(legacy_mac windows).each do |type|
+    define_method("test_initialize_#{type}_line_endings") do
+      ppk = PuTTY::Key::PPK.new(fixture_path("test-#{type.gsub('_', '-')}-line-endings.ppk"))
+      assert_test_ppk_properties(ppk)
+    end
   end
 
   def create_test_ppk

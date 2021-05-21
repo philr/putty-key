@@ -499,6 +499,7 @@ module PuTTY
         # @param file [IO] The file to read from.
         def initialize(file)
           @file = file
+          @consumed_byte = nil
         end
 
         # Reads the next field from the file.
@@ -571,16 +572,35 @@ module PuTTY
 
         private
 
-        # Reads a single new-line (\n or \r\n) terminated line from the file,
-        # removing the new-line character.
+        # Reads a single new-line (\n, \r\n or \r) terminated line from the
+        # file, removing the new-line character.
         #
         # @return [String] The line.
         #
         # @raise [FormatError] If the end of file was detected before reading a
         #   line.
         def read_line
-          @file.readline("\n").chomp("\n")
-        rescue EOFError
+          line = ''.b
+
+          if @consumed_byte
+            line << @consumed_byte
+            @consumed_byte = nil
+          end
+
+          while byte = @file.getbyte
+            return line if byte == 0x0a
+
+            if byte == 0x0d
+              byte = @file.getbyte
+              return line if !byte || byte == 0x0a
+              @consumed_byte = byte
+              return line
+            end
+
+            line << byte
+          end
+
+          return line if line.bytesize > 0
           raise FormatError, 'Truncated ppk file detected'
         end
       end
