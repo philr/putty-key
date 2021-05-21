@@ -137,6 +137,31 @@ class PPKTest < Minitest::Test
     assert_test_ppk_properties(ppk)
   end
 
+  def test_initialize_from_io_with_getbyte
+    File.open(fixture_path('test-format-2.ppk'), 'rb') do |file|
+      reader = TestReaderWithGetbyte.new(file)
+      ppk = PuTTY::Key::PPK.new(reader)
+      assert_test_ppk_properties(ppk)
+    end
+  end
+
+  def test_initialize_from_io_with_read
+    File.open(fixture_path('test-format-2.ppk'), 'rb') do |file|
+      reader = TestReaderWithRead.new(file)
+      ppk = PuTTY::Key::PPK.new(reader)
+      assert_test_ppk_properties(ppk)
+    end
+  end
+
+  def test_initialize_from_io_with_binmode
+    File.open(fixture_path('test-format-2.ppk'), 'r') do |file|
+      reader = TestReaderWithBinmode.new(file)
+      ppk = PuTTY::Key::PPK.new(reader)
+      assert_equal(1, reader.binmode_calls)
+      assert_test_ppk_properties(ppk)
+    end
+  end
+
   %w(legacy_mac windows).each do |type|
     define_method("test_initialize_#{type}_line_endings") do
       ppk = PuTTY::Key::PPK.new(fixture_path("test-#{type.gsub('_', '-')}-line-endings.ppk"))
@@ -399,6 +424,28 @@ class PPKTest < Minitest::Test
     end
   end
 
+  def test_save_to_io
+    ppk = create_test_ppk
+    temp_file_name do |file_name|
+      File.open(file_name, 'wb') do |file|
+        writer = TestWriter.new(file)
+        ppk.save(writer)
+      end
+      assert_identical_to_fixture('test-format-2.ppk', file_name)
+    end
+  end
+
+  def test_save_to_io_with_binmode
+    ppk = create_test_ppk
+    temp_file_name do |file_name|
+      File.open(file_name, 'w') do |file|
+        writer = TestWriter.new(file)
+        ppk.save(writer)
+      end
+      assert_identical_to_fixture('test-format-2.ppk', file_name)
+    end
+  end
+
   def test_save_overwrite
     ppk = create_test_ppk
     temp_file_name do |file|
@@ -413,6 +460,68 @@ class PPKTest < Minitest::Test
     temp_file_name do |file|
       result = ppk.save(file)
       assert_equal(File.size(file), result)
+    end
+  end
+
+  module BinmodeCallsTest
+    def binmode
+      if instance_variable_defined?(:@binmode_calls)
+        @binmode_calls += 1
+      else
+        @binmode_calls = 1
+      end
+      @io.binmode
+      self
+    end
+
+    def binmode_calls
+      instance_variable_defined?(:@binmode_calls) ? @binmode_calls : 0
+    end
+  end
+
+  class TestReaderWithGetbyte
+    def initialize(io)
+      @io = io
+    end
+
+    def getbyte(*args)
+      @io.getbyte(*args)
+    end
+  end
+
+  class TestReaderWithRead
+    def initialize(io)
+      @io = io
+    end
+
+    def read(*args)
+      @io.read(*args)
+    end
+  end
+
+  class TestReaderWithBinmode < TestReaderWithGetbyte
+    include BinmodeCallsTest
+
+    def getbyte(*args)
+      raise 'binmode must be called before getbyte' unless binmode_calls > 0
+      super
+    end
+  end
+
+  class TestWriter
+    def initialize(io)
+      @io = io
+    end
+
+    def write(*args)
+      @io.write(*args)
+    end
+  end
+
+  class TestWriterWithBinmode < TestWriter
+    def write(*args)
+      raise 'binmode must be called before write' unless binmode_calls > 0
+      super
     end
   end
 end

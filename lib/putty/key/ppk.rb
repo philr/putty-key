@@ -7,9 +7,11 @@ module PuTTY
     # Represents a PuTTY private key (.ppk) file.
     #
     # The {PPK} {#initialize constructor} can be used to either create an
-    # uninitialized key or to load a .ppk file.
+    # uninitialized key or to read a .ppk file (from file or an `IO`-like
+    # instance).
     #
-    # The {#save} method can be used to save a {PPK} instance to a .ppk file.
+    # The {#save} method can be used to write a {PPK} instance to a .ppk file or
+    # `IO`-like instance.
     #
     # The {#algorithm}, {#comment}, {#public_blob} and {#private_blob}
     # attributes provide access to the high level fields of the PuTTY private
@@ -81,11 +83,18 @@ module PuTTY
       # @return [String] The private component of the key
       attr_accessor :private_blob
 
-      # Constructs a new {PPK} instance either uninitialized, or by loading a
-      # .ppk file.
+      # Constructs a new {PPK} instance either uninitialized, or initialized
+      # by reading from a .ppk file or an `IO`-like instance.
       #
-      # @param path [Object] Set to the path of a .ppk file to load the file.
-      #   Leave as `nil` to leave the new {PPK} instance uninitialized.
+      # To read from a file set `path_or_io` to the file path, either as a
+      # `String` or a `Pathname`. To read from an `IO`-like instance set
+      # `path_or_io` to the instance. The instance must respond to `#read`.
+      # `#binmode` will be called before reading if supported by the instance.
+      #
+      # @param path_or_io [Object] Set to the path of a .ppk file to load the
+      #   file as a `String` or `Pathname`, or an `IO`-like instance to read the
+      #   .ppk file from that instance. Set to `nil` to leave the new {PPK}
+      #   instance uninitialized.
       # @param passphrase [String] The passphrase to use when loading an
       #   encrypted .ppk file.
       #
@@ -97,11 +106,11 @@ module PuTTY
       #   libargon2 could not be loaded.
       # @raise [Argon2Error] If opening an encrypted format 3 .ppk file and
       #   libargon2 reported an error hashing the passphrase.
-      def initialize(path = nil, passphrase = nil)
+      def initialize(path_or_io = nil, passphrase = nil)
         passphrase = nil if passphrase && passphrase.to_s.empty?
 
-        if path
-          Reader.open(path) do |reader|
+        if path_or_io
+          Reader.open(path_or_io) do |reader|
             format, @algorithm = reader.field_matching(/PuTTY-User-Key-File-(\d+)/)
             format = format.to_i
             raise FormatError, "The ppk file is using a format that is too new (#{format})" if format > MAXIMUM_FORMAT
@@ -159,13 +168,21 @@ module PuTTY
         end
       end
 
-      # Saves this PuTTY private key instance to a .ppk file.
+      # Writes this PuTTY private key instance to a .ppk file or `IO`-like
+      # instance.
+      #
+      # To write to a file, set `path_or_io` to the file path, either as a
+      # `String` or a `Pathname`. To write to an `IO`-like instance set
+      # `path_or_io` to the instance. The instance must respond to `#write`.
+      # `#binmode` will be called before writing if supported by the instance.
+      #
+      # If a file with the given path already exists, it will be overwritten.
       #
       # The {#algorithm}, {#private_blob} and {#public_blob} attributes must
       # have been set before calling {#save}.
       #
-      # @param path [Object] The path to write to. If a file already exists, it
-      #   will be overwritten.
+      # @param path_or_io [Object] The path to write to as a `String` or
+      #   `Pathname`, or an `IO`-like instance to write to.
       # @param passphrase [String] Set `passphrase` to encrypt the .ppk file
       #   using the specified passphrase. Leave as `nil` to create an
       #   unencrypted .ppk file.
@@ -193,12 +210,12 @@ module PuTTY
       #   libargon2 could not be loaded.
       # @raise [Argon2Error] If saving an encrypted format 3 .ppk file and
       #   libargon2 reported an error hashing the passphrase.
-      def save(path, passphrase = nil, encryption_type: DEFAULT_ENCRYPTION_TYPE, format: DEFAULT_FORMAT, argon2_params: DEFAULT_ARGON2_PARAMS)
+      def save(path_or_io, passphrase = nil, encryption_type: DEFAULT_ENCRYPTION_TYPE, format: DEFAULT_FORMAT, argon2_params: DEFAULT_ARGON2_PARAMS)
         raise InvalidStateError, 'algorithm must be set before calling save' unless @algorithm
         raise InvalidStateError, 'public_blob must be set before calling save' unless @public_blob
         raise InvalidStateError, 'private_blob must be set before calling save' unless @private_blob
 
-        raise ArgumentError, 'An output path must be specified' unless path
+        raise ArgumentError, 'An output path or io instance must be specified' unless path_or_io
 
         passphrase = nil if passphrase && passphrase.to_s.empty?
 
@@ -238,7 +255,7 @@ module PuTTY
 
         private_mac = compute_private_mac(format, mac_key, encryption_type, padded_private_blob)
 
-        Writer.open(path) do |writer|
+        Writer.open(path_or_io) do |writer|
           writer.field("PuTTY-User-Key-File-#{format}", @algorithm)
           writer.field('Encryption', encryption_type)
           writer.field('Comment', @comment)
@@ -480,23 +497,35 @@ module PuTTY
       #
       # @private
       class Reader
-        # Opens a .ppk file for reading, creates a new instance of `Reader` and
-        # yields it to the caller.
+        # Opens a .ppk file for reading (or uses the provided `IO`-like
+        # instance), creates a new instance of `Reader` and yields it to the
+        # caller.
         #
-        # @param path [Object] The path of the .ppk file to be read.
+        # @param path_or_io [Object] The path of the .ppk file to be read or an
+        #   `IO`-like object.
         #
         # @return [Object] The result of yielding to the caller.
         #
         # raise [Errno::ENOENT] If the file specified by `path` does not exist.
-        def self.open(path)
-          File.open(path.to_s, 'rb') do |file|
-            yield Reader.new(file)
+        def self.open(path_or_io)
+          if path_or_io.kind_of?(String) || path_or_io.kind_of?(Pathname)
+            File.open(path_or_io.to_s, 'rb') do |file|
+              yield Reader.new(file)
+            end
+          else
+            path_or_io.binmode if path_or_io.respond_to?(:binmode)
+
+            unless path_or_io.respond_to?(:getbyte)
+              path_or_io = GetbyteIo.new(path_or_io)
+            end
+
+            yield Reader.new(path_or_io)
           end
         end
 
-        # Initializes a new {Reader} with an {IO} to read from.
+        # Initializes a new {Reader} with an `IO`-like instance to read from.
         #
-        # @param file [IO] The file to read from.
+        # @param file [Object] The `IO`-like instance to read from.
         def initialize(file)
           @file = file
           @consumed_byte = nil
@@ -606,6 +635,28 @@ module PuTTY
       end
       private_constant :Reader
 
+      # Wraps an `IO`-like instance, providing an implementation of `#getbyte`.
+      # Allows reading from `IO`-like instances that only provide `#read`.
+      class GetbyteIo
+        # Initializes a new {GetbyteIO} with the given `IO`-like instance.
+        #
+        # @param io [Object] An `IO`-like instance.
+        def initialize(io)
+          @io = io
+          @outbuf = ' '.b
+        end
+
+        # Gets the next 8-bit byte (0..255) from the `IO`-like instance.
+        #
+        # @return [Integer] the next byte or `nil` if the end of the stream has
+        #   been reached.
+        def getbyte
+          s = @io.read(1, @outbuf)
+          s && s.getbyte(0)
+        end
+      end
+      private_constant :GetbyteIo
+
       # Handles writing .ppk files.
       #
       # @private
@@ -615,24 +666,31 @@ module PuTTY
         # @return [Integer] The number of bytes that have been written.
         attr_reader :bytes_written
 
-        # Opens a .ppk file for writing, creates a new instance of `Writer` and
-        # yields it to the caller.
+        # Opens a .ppk file for writing (or uses the provided `IO`-like
+        # instance), creates a new instance of `Writer` and yields it to the
+        # caller.
         #
-        # @param path [Object] The path of the .ppk file to be written.
+        # @param path_or_io [Object] The path of the .ppk file to be written or
+        #   an `IO`-like instance.
         #
         # @return [Object] The result of yielding to the caller.
         #
         # @raise [Errno::ENOENT] If a directory specified by `path` does not
         #   exist.
-        def self.open(path)
-          File.open(path.to_s, 'wb') do |file|
-            yield Writer.new(file)
+        def self.open(path_or_io)
+          if path_or_io.kind_of?(String) || path_or_io.kind_of?(Pathname)
+            File.open(path_or_io.to_s, 'wb') do |file|
+              yield Writer.new(file)
+            end
+          else
+            path_or_io.binmode if path_or_io.respond_to?(:binmode)
+            yield Writer.new(path_or_io)
           end
         end
 
-        # Initializes a new {Writer} with an {IO} to write to.
+        # Initializes a new {Writer} with an `IO`-like instance to write to.
         #
-        # @param file [IO] The file to write to.
+        # @param file [Object] The `IO`-like instance to write to.
         def initialize(file)
           @file = file
           @bytes_written = 0
