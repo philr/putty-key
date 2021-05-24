@@ -15,6 +15,13 @@ private keys to be converted to and from PuTTY's private key format.
   s.email = 'phil.ross@gmail.com'
   s.homepage = 'https://github.com/philr/putty-key'
   s.license = 'MIT'
+  s.metadata = {
+    'bug_tracker_uri' => 'https://github.com/philr/putty-key/issues',
+    'changelog_uri' => 'https://github.com/philr/putty-key/blob/master/CHANGES.md',
+    'documentation_uri' => "https://rubydoc.info/gems/#{s.name}/#{s.version}",
+    'homepage_uri' => s.homepage,
+    'source_code_uri' => "https://github.com/philr/putty-key/tree/v#{s.version}"
+  }
   s.files = %w(CHANGES.md Gemfile LICENSE README.md Rakefile putty-key.gemspec .yardopts) +
             Dir['lib/**/*.rb'] +
             Dir['test/**/*.rb'] +
