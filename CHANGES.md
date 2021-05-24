@@ -3,7 +3,7 @@
 ## Version 1.1.0 - 24-May-2021 ##
 
 * Add support for [format 3 .ppk files](https://www.chiark.greenend.org.uk/~sgtatham/putty/wishlist/ppk3.html)
-  introduced in PuTTY version 0.75. PuTTY::Key::PPK#save defaults to saving
+  introduced in PuTTY version 0.75. `PuTTY::Key::PPK#save` defaults to saving
   format 2 files. [libargon2](https://github.com/P-H-C/phc-winner-argon2) is
   required to load and save encrypted format 3 files.
 * Write files using LF line endings (Unix) instead of CRLF (Windows) to match
