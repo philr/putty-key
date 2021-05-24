@@ -3,7 +3,7 @@ require File.expand_path(File.join('..', 'lib', 'putty', 'key', 'version'), __FI
 Gem::Specification.new do |s|
   s.name = 'putty-key'
   s.version = PuTTY::Key::VERSION
-  s.summary = 'Reads and writes PuTTY private key (.ppk) files. Refines OpenSSL::PKey to allow key conversion.'
+  s.summary = 'PuTTY private key (.ppk) library. Supports reading and writing with a refinement to OpenSSL::PKey to allow key conversion.'
   s.description = <<-EOF
 PuTTY::Key is a Ruby implementation of the PuTTY private key (ppk) format,
 handling reading and writing .ppk files. It includes a refinement to Ruby's
