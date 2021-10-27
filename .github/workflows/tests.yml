@@ -9,28 +9,23 @@ jobs:
       matrix:
         os: [ubuntu-20.04, windows-2019]
         ruby: ['2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '2.7', '3.0', jruby-9.1, jruby-9.2]
-        architecture: [default]
         name_suffix: ['']
         experimental: [false]
         include:
           - os: ubuntu-20.04
             ruby: head
-            achitecture: default
             name_suffix: ' (experimental)'
             experimental: true
           - os: ubuntu-20.04
             ruby: jruby-head
-            achitecture: default
             name_suffix: ' (experimental)'
             experimental: true
           - os: windows-2019
             ruby: head
-            achitecture: default
             name_suffix: ' (experimental)'
             experimental: true
           - os: windows-2019
             ruby: jruby-head
-            achitecture: default
             name_suffix: ' (experimental)'
             experimental: true
       fail-fast: false
