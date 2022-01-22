@@ -15,6 +15,10 @@ if TEST_COVERAGE
     "#{object.respond_to?(method) ? '' : 'no_'}#{Regexp.escape(object.class.name.downcase.gsub('::', '_'))}_#{Regexp.escape(method)}"
   end
 
+  feature_support = [['refinement_class', defined?(Refinement)]].map do |feature, available|
+    "#{available ? '' : 'no_'}#{feature}"
+  end
+
   SimpleCov.command_name TEST_TYPE.to_s
 
   SimpleCov.formatters = [
@@ -23,7 +27,7 @@ if TEST_COVERAGE
 
   SimpleCov.start do
     add_filter 'test'
-    nocov_token "nocov_(#{method_support.join('|')})"
+    nocov_token "nocov_(#{(method_support + feature_support).join('|')})"
     project_name 'PuTTY::Key'
   end
 end

@@ -201,13 +201,30 @@ module PuTTY
     end
 
     OpenSSL.const_get(:PKEY_CLASSES).each do |name, openssl_class|
+      mod = OpenSSL.const_get(name)
       refine openssl_class do
-        include OpenSSL.const_get(name)
+        if defined?(::Refinement) && kind_of?(::Refinement)
+          # :nocov_no_refinement_class:
+          import_methods(mod)
+          # :nocov_no_refinement_class:
+        else
+          # :nocov_refinement_class:
+          include mod
+          # :nocov_refinement_class:
+        end
       end if respond_to?(:refine, true)
     end
 
     refine ::OpenSSL::PKey.singleton_class do
-      include OpenSSL::ClassMethods
+      if defined?(::Refinement) && kind_of?(::Refinement)
+        # :nocov_no_refinement_class:
+        import_methods(OpenSSL::ClassMethods)
+        # :nocov_no_refinement_class:
+      else
+        # :nocov_refinement_class:
+        include OpenSSL::ClassMethods
+        # :nocov_refinement_class:
+      end
     end if respond_to?(:refine, true)
   end
 end
