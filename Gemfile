@@ -20,6 +20,9 @@ group :test do
   # doesn't get used. The using the source version results in a segmentation
   # fault during libffi initialization.
   #
+  # Binaries of 15.5.0 to 15.5.4 are declared as compatible with Ruby >= 2.3,
+  # but don't get used with Bundler 2.3.23 and Ruby 2.3 on Windows.
+  #
   # Limit to earlier compatible versions.
-  gem 'ffi', '< 1.15.5' if RUBY_VERSION < '2.4' && RUBY_PLATFORM =~ /mingw/
+  gem 'ffi', '< 1.15.0' if RUBY_VERSION < '2.4' && RUBY_PLATFORM =~ /mingw/
 end
