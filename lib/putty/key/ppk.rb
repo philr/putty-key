@@ -481,7 +481,7 @@ module PuTTY
       # after padding bytes have been appended prior to encryption).
       #
       # @param format [Integer] The format of the .ppk file.
-      # @param passphrase [String] The encryption passphrase.
+      # @param mac_key [String] The HMAC key.
       # @param encryption_type [String] The value of the Encryption field.
       # @param padded_private_blob [String] The private blob after padding bytes
       #   have been appended prior to encryption.
