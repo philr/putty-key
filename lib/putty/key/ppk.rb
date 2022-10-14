@@ -319,7 +319,19 @@ module PuTTY
       def derive_keys(format, cipher = nil, passphrase = nil, argon2_params = nil)
         if format >= 3
           return derive_format_3_keys(cipher, passphrase, argon2_params) if cipher
-          return [''.b, nil, nil, nil]
+
+          # An empty string should work for the MAC, but ::OpenSSL::HMAC fails
+          # when used with OpenSSL 3:
+          #
+          #   EVP_PKEY_new_mac_key: malloc failure (OpenSSL::HMACError).
+          #
+          # See https://github.com/ruby/openssl/pull/538 and
+          # https://github.com/openssl/openssl/issues/13089.
+          #
+          # Ruby 3.1.3 should contain the workaround from ruby/openssl PR 538.
+          #
+          # Use "\0" as the MAC key for a workaround for Ruby < 3.1.3.
+          return ["\0".b, nil, nil, nil]
         end
 
         mac_key = derive_format_2_mac_key(passphrase)
