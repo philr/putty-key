@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'putty/key'
+
 TEST_TYPE = (ENV['TEST_TYPE'] || 'refinement').to_sym
 raise "Unrecognized TEST_TYPE: #{TEST_TYPE}" unless [:refinement, :global].include?(TEST_TYPE)
 
@@ -15,7 +17,10 @@ if TEST_COVERAGE
     "#{object.respond_to?(method) ? '' : 'no_'}#{Regexp.escape(object.class.name.downcase.gsub('::', '_'))}_#{Regexp.escape(method)}"
   end
 
-  feature_support = [['refinement_class', defined?(Refinement)]].map do |feature, available|
+  feature_support = [
+    ['openssl3', PuTTY::Key::OpenSSL.const_get(:Version).openssl?(3)],
+    ['refinement_class', defined?(Refinement)]
+  ].map do |feature, available|
     "#{available ? '' : 'no_'}#{feature}"
   end
 
@@ -31,8 +36,6 @@ if TEST_COVERAGE
     project_name 'PuTTY::Key'
   end
 end
-
-require 'putty/key'
 
 require 'fileutils'
 require 'minitest/autorun'
