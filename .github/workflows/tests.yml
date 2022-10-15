@@ -12,12 +12,20 @@ jobs:
         name_suffix: ['']
         experimental: [false]
         include:
+          - os: ubuntu-22.04
+            ruby: '3.1'
+            name_suffix: ''
+            experimental: false
           - os: ubuntu-20.04
             ruby: head
             name_suffix: ' (experimental)'
             experimental: true
           - os: ubuntu-20.04
             ruby: jruby-head
+            name_suffix: ' (experimental)'
+            experimental: true
+          - os: ubuntu-22.04
+            ruby: head
             name_suffix: ' (experimental)'
             experimental: true
           - os: windows-2019
@@ -60,6 +68,8 @@ jobs:
       - run: ruby --version
       - run: gem --version
       - run: bundle --version
+      - name: OpenSSL Version
+        run: ruby -ropenssl -e'puts OpenSSL::OPENSSL_VERSION'
       - run: bundle exec rake test
         env:
           TESTOPTS: --verbose
