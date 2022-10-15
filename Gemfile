@@ -12,7 +12,7 @@ group :test do
 
   # coveralls is no longer maintained, but supports Ruby < 2.3.
   # coveralls_reborn is maintained, but requires Ruby >= 2.3.
-  gem 'coveralls', '~> 0.8', require: false if RUBY_VERSION < '2.3'
+  gem 'coveralls', git: 'https://github.com/philr/coveralls-ruby.git', require: false if RUBY_VERSION < '2.3'
   gem 'coveralls_reborn', '~> 0.13', require: false if RUBY_VERSION >= '2.3'
 
   # The source version of ffi 1.15.5 is declared as compatible with Ruby >= 2.3.
