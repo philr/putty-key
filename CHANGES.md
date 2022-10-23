@@ -1,5 +1,12 @@
 # Changes #
 
+## Version 1.1.1 - 23-Oct-2022 ##
+
+* Add support for Ruby 3.2.
+* Add support for OpenSSL 3 (requires either Ruby 3.1+, or version 3.0.0+ of the
+  openssl gem).
+
+
 ## Version 1.1.0 - 24-May-2021 ##
 
 * Add support for [format 3 .ppk files](https://www.chiark.greenend.org.uk/~sgtatham/putty/wishlist/ppk3.html)
