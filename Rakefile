@@ -4,10 +4,10 @@ require 'rubygems/package_task'
 require 'rake/testtask'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__))
+GEMSPEC_PATH = File.join(BASE_DIR, 'putty-key.gemspec')
+spec = TOPLEVEL_BINDING.eval(File.read(GEMSPEC_PATH), GEMSPEC_PATH)
 
 task :default => :test
-
-spec = eval(File.read('putty-key.gemspec'))
 
 # Attempt to find the private key and return a spec with added options for
 # signing the gem if found.

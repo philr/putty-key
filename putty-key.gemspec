@@ -1,4 +1,4 @@
-require File.expand_path(File.join('..', 'lib', 'putty', 'key', 'version'), __FILE__)
+require_relative 'lib/putty/key/version'
 
 Gem::Specification.new do |s|
   s.name = 'putty-key'
