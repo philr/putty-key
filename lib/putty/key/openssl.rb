@@ -25,6 +25,11 @@ module PuTTY
 
       private_constant :SSH_CURVES
 
+      # Either a real JRuby NullPointerException, or a fake class that won't be
+      # raised. Can be rescued to handle NullPointerException on jruby.
+      JavaNullPointerException = RUBY_ENGINE == 'jruby' ? Java::JavaLang::NullPointerException : Class.new(Exception)
+      private_constant :JavaNullPointerException
+
       # OpenSSL version helper methods.
       #
       # @private
@@ -355,7 +360,12 @@ module PuTTY
         # @raise [UnsupportedCurveError] If the key uses a curve that is not
         #   supported by PuTTY.
         def to_ppk
-          curve = group && group.curve_name
+          g = group
+          curve = g && begin
+            g.curve_name
+          rescue JavaNullPointerException
+            nil
+          end
           raise InvalidStateError, 'The key has not been fully initialized (a curve name must be assigned)' unless curve
           ssh_curve = SSH_CURVES[curve]
           raise UnsupportedCurveError, "The curve '#{curve}' is not supported" unless ssh_curve
