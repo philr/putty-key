@@ -23,6 +23,14 @@ group :test do
     gem 'term-ansicolor', '< 1.9'
   end
 
+  # tins is a dependency of coveralls. From 1.33.0 it depends on bigdecimal,
+  # which can't be installed on old JRuby versions.
+  #
+  # Limit to an earlier compatible version.
+  if RUBY_ENGINE == 'jruby'
+    gem 'tins', '< 1.33'
+  end
+
   # The source version of ffi 1.15.5 is declared as compatible with Ruby >= 2.3.
   # The binary version of 1.15.5 is declared as compatible with Ruby >= 2.4, so
   # doesn't get used. The using the source version results in a segmentation
