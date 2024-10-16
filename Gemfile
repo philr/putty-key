@@ -15,6 +15,14 @@ group :test do
   gem 'coveralls', git: 'https://github.com/philr/coveralls-ruby.git', require: false if RUBY_VERSION < '2.3'
   gem 'coveralls_reborn', '~> 0.13', require: false if RUBY_VERSION >= '2.3'
 
+  # term-ansicolor is a dependency of coveralls. All versions are falsely
+  # declared as compatible with any Ruby version.
+  #
+  # Limit to an earlier compatible version.
+  if RUBY_VERSION < '2.5'
+    gem 'term-ansicolor', '< 1.9'
+  end
+
   # The source version of ffi 1.15.5 is declared as compatible with Ruby >= 2.3.
   # The binary version of 1.15.5 is declared as compatible with Ruby >= 2.4, so
   # doesn't get used. The using the source version results in a segmentation
