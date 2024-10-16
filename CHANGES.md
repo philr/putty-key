@@ -1,5 +1,12 @@
 # Changes #
 
+## Version 1.1.2 - 16-Oct-2024 ##
+
+* Fix `Java::JavaLang::NullPointerException` being raised instead of
+  `PuTTY::Key::InvalidStateError` by `OpenSSL::PKey::EC#to_ppk` on JRuby 9.4
+  when the key is not initialized.
+
+
 ## Version 1.1.1 - 23-Oct-2022 ##
 
 * Add support for Ruby 3.2.
