@@ -8,16 +8,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, windows-2022]
-        ruby: ['2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '2.7', '3.0', '3.1', '3.2', '3.3', jruby-9.1, jruby-9.2, jruby-9.3, jruby-9.4]
+        ruby: ['2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '2.7', '3.0', '3.1', '3.2', '3.3', '3.4', jruby-9.1, jruby-9.2, jruby-9.3, jruby-9.4]
         name_suffix: ['']
         experimental: [false]
+        exclude:
+          - os: windows-2022
+            ruby: '3.4'
         include:
           - os: ubuntu-20.04
-            ruby: '3.3'
+            ruby: '3.4'
             name_suffix: ''
             experimental: false
           - os: ubuntu-22.04
-            ruby: '3.3'
+            ruby: '3.4'
             name_suffix: ''
             experimental: false
           - os: windows-2019
