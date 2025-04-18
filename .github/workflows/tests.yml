@@ -41,12 +41,12 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v4
-      - if: (startsWith(matrix.ruby, 'jruby-9.1') || startsWith(matrix.ruby, 'jruby-9.2')) && startsWith(matrix.os, 'ubuntu-')
+      - if: startsWith(matrix.ruby, 'jruby-9.1') || (startsWith(matrix.ruby, 'jruby-9.2') && startsWith(matrix.os, 'ubuntu-'))
         uses: philr/setup-ruby@legacy-v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - if: ${{ !((startsWith(matrix.ruby, 'jruby-9.1') || startsWith(matrix.ruby, 'jruby-9.2')) && startsWith(matrix.os, 'ubuntu-')) }}
+      - if: ${{ !(startsWith(matrix.ruby, 'jruby-9.1') || (startsWith(matrix.ruby, 'jruby-9.2') && startsWith(matrix.os, 'ubuntu-'))) }}
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
