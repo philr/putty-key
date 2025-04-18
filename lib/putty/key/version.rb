@@ -3,6 +3,6 @@
 module PuTTY
   module Key
     # The PuTTY::Key version number.
-    VERSION = '1.1.2'
+    VERSION = '1.1.3'
   end
 end
