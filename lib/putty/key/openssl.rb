@@ -360,9 +360,9 @@ module PuTTY
         # @raise [UnsupportedCurveError] If the key uses a curve that is not
         #   supported by PuTTY.
         def to_ppk
-          g = group
-          curve = g && begin
-            g.curve_name
+          curve = begin
+            g = group
+            g && g.curve_name
           rescue JavaNullPointerException
             nil
           end
