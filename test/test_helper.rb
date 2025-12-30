@@ -13,12 +13,14 @@ if TEST_COVERAGE
 
   require 'openssl'
 
-  method_support = [[OpenSSL::PKey::DSA.new, :set_key], [OpenSSL::PKey::RSA.new, :set_factors]].map do |object, method|
+  openssl3 = PuTTY::Key::OpenSSL.const_get(:Version).openssl?(3)
+
+  method_support = openssl3 ? [] : [[OpenSSL::PKey::DSA.new, :set_key], [OpenSSL::PKey::RSA.new, :set_factors]].map do |object, method|
     "#{object.respond_to?(method) ? '' : 'no_'}#{Regexp.escape(object.class.name.downcase.gsub('::', '_'))}_#{Regexp.escape(method)}"
   end
 
   feature_support = [
-    ['openssl3', PuTTY::Key::OpenSSL.const_get(:Version).openssl?(3)],
+    ['openssl3', openssl3],
     ['refinement_class', defined?(Refinement)]
   ].map do |feature, available|
     "#{available ? '' : 'no_'}#{feature}"
