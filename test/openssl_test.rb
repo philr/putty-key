@@ -278,7 +278,11 @@ class OpenSSLTest < Minitest::Test
   end
 
   def test_to_ppk_rsa_uninitialized
-    pkey = OpenSSL::PKey::RSA.new
+    pkey = begin
+      OpenSSL::PKey::RSA.new
+    rescue ArgumentError
+      skip('OpenSSL::PKey::RSA cannot be created in an uninitialized state')
+    end
     assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
   end
 
@@ -319,7 +323,12 @@ class OpenSSLTest < Minitest::Test
   end
 
   def test_to_ppk_dss_uninitialized
-    pkey = OpenSSL::PKey::DSA.new
+    pkey = begin
+      OpenSSL::PKey::DSA.new
+    rescue ArgumentError
+      skip('OpenSSL::PKey::DSA cannot be created in an uninitialized state')
+    end
+
     assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
   end
 
@@ -444,7 +453,11 @@ class OpenSSLTest < Minitest::Test
     end
 
     def test_to_ppk_uninitialized_ec_key_no_curve
-      pkey = OpenSSL::PKey::EC.new
+      pkey = begin
+        OpenSSL::PKey::EC.new
+      rescue ArgumentError
+        skip('OpenSSL::PKey::EC cannot be created in an uninitialized state')
+      end
       assert_raises(PuTTY::Key::InvalidStateError) { pkey.to_ppk }
     end
   end
